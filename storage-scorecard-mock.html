@@ -125,8 +125,8 @@
     .svc-pt{font-size:15px;font-weight:600}
     .svc-pm{font-size:11px;color:#94A3B8}
     .svc-pb{padding:18px}
-    .pillar-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
-    .pc{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px}
+    .pillar-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+    .pc{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px;min-width:0}
     .pc.r{border-top:3px solid var(--red)}
     .pc.y{border-top:3px solid var(--yellow)}
     .pc.g{border-top:3px solid var(--green)}
@@ -642,6 +642,10 @@ function drawTrends(){
     var k=cv.getAttribute('data-k');
     var d=TD[k];
     if(!d)return;
+    cv.style.width='';cv.style.height='';
+    var logW=cv.offsetWidth;
+    if(!logW)return;
+    cv.width=logW;cv.height=40;
     var data=d[0],col=d[1],yN=d[2],yX=d[3];
     var _=sc(cv),ctx=_.ctx,w=_.w,h=_.h;
     var p=3,cw=w-p*2,ch=h-p*2,n=data.length,xS=cw/(n-1);
