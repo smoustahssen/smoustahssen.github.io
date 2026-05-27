@@ -125,10 +125,8 @@
     .svc-pt{font-size:15px;font-weight:600}
     .svc-pm{font-size:11px;color:#94A3B8}
     .svc-pb{padding:18px}
-    .pillar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:start}
+    .pillar-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
     .pc{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px}
-    .pc{min-height:0}
-    .pc .ps-l{color:var(--muted);min-width:120px}
     .pc.r{border-top:3px solid var(--red)}
     .pc.y{border-top:3px solid var(--yellow)}
     .pc.g{border-top:3px solid var(--green)}
@@ -328,56 +326,14 @@
     </div>
 
     <div class="sb-deep">
-      <div class="sb-section-title"><span class="sb-section-letter">E</span> Security &amp; Compliance <span class="sb-badge mock">MOCK</span><a href="https://grafana.roblox.com/d/storage-patching" target="_blank" class="grafana-link" style="font-size:11px">&#8599; Grafana</a></div>
+      <div class="sb-section-title"><span class="sb-section-letter">E</span> Security &amp; Compliance <span class="sb-badge mock">MOCK</span></div>
       <div class="sb-section-desc">12-month trends. Target = 100%.</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:12px">
-  <!-- Patching -->
-  <div>
-    <div class="sb-sec-label" style="font-size:11px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px">
-      Fleet Patching (30d)
-      <span style="font-size:10px;color:var(--red-text);background:var(--red-bg);padding:1px 6px;border-radius:3px">7 clusters overdue</span>
-      <a href="https://grafana.roblox.com/d/storage-patching" target="_blank" class="grafana-link" style="margin-left:auto"><svg style="width:10px;height:10px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 8 16 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg> Grafana</a>
-    </div>
-    <div class="sec-row"><div>EaaS/CRDB</div><div class="sec-bar-track"><div class="sec-bar-fill" style="width:86%;background:#EF4444"></div></div><div style="text-align:right">86%</div><div><span style="font-size:10px;color:var(--red-text);background:var(--red-bg);padding:1px 5px;border-radius:3px">2 clusters</span></div></div>
-    <div class="sec-row"><div>RaaS</div><div class="sec-bar-track"><div class="sec-bar-fill" style="width:91%;background:#F59E0B"></div></div><div style="text-align:right">91%</div><div><span style="font-size:10px;color:var(--yellow-text);background:var(--yellow-bg);padding:1px 5px;border-radius:3px">2 clusters</span></div></div>
-    <div class="sec-row"><div>QaaS</div><div class="sec-bar-track"><div class="sec-bar-fill" style="width:100%;background:#10B981"></div></div><div style="text-align:right">100%</div><div><span style="color:var(--green-text)">&#10003;</span></div></div>
-    <div class="sec-row"><div>R3</div><div class="sec-bar-track"><div class="sec-bar-fill" style="width:100%;background:#10B981"></div></div><div style="text-align:right">100%</div><div><span style="color:var(--green-text)">&#10003;</span></div></div>
-    <div class="sec-row"><div>RDB-KV</div><div class="sec-bar-track"><div class="sec-bar-fill" style="width:100%;background:#10B981"></div></div><div style="text-align:right">100%</div><div><span style="color:var(--green-text)">&#10003;</span></div></div>
-    <div class="sec-row"><div>RDB-PG</div><div class="sec-bar-track"><div class="sec-bar-fill" style="width:100%;background:#10B981"></div></div><div style="text-align:right">100%</div><div><span style="color:var(--green-text)">&#10003;</span></div></div>
-    <div class="sec-row"><div>MS SQL</div><div class="sec-bar-track"><div class="sec-bar-fill" style="width:94%;background:#F59E0B"></div></div><div style="text-align:right">94%</div><div><span style="font-size:10px;color:var(--yellow-text);background:var(--yellow-bg);padding:1px 5px;border-radius:3px">2 nodes</span></div></div>
-    <div class="sec-row"><div>Elasticsearch</div><div class="sec-bar-track"><div class="sec-bar-fill" style="width:96%;background:#F59E0B"></div></div><div style="text-align:right">96%</div><div><span style="font-size:10px;color:var(--yellow-text);background:var(--yellow-bg);padding:1px 5px;border-radius:3px">1 cluster</span></div></div>
-    <div class="sec-row"><div>ClickHouse</div><div class="sec-bar-track"><div class="sec-bar-fill" style="width:100%;background:#10B981"></div></div><div style="text-align:right">100%</div><div><span style="color:var(--green-text)">&#10003;</span></div></div>
-    <div class="sec-row"><div>Temporal</div><div class="sec-bar-track"><div class="sec-bar-fill" style="width:100%;background:#10B981"></div></div><div style="text-align:right">100%</div><div><span style="color:var(--green-text)">&#10003;</span></div></div>
-  </div>
-  <!-- Secrets rotation -->
-  <div>
-    <div class="sb-sec-label" style="font-size:11px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px">
-      Secrets Rotation (90d)
-      <span style="font-size:10px;color:var(--yellow-text);background:var(--yellow-bg);padding:1px 6px;border-radius:3px">3 pending</span>
-    </div>
-    <div class="sec-row"><div>EaaS/CRDB</div><div style="color:var(--muted)">Apr 2026</div><div style="grid-column:span 2;color:var(--green-text)"><span style="color:var(--green-text)">&#10003; 30d ago</span></div></div>
-    <div class="sec-row"><div>RaaS</div><div style="color:var(--muted)">Mar 2026</div><div style="grid-column:span 2;color:var(--yellow-text)"><span style="color:var(--yellow-text)">&#9888; 60d ago</span> <span style="font-size:9px;color:var(--yellow-text);background:var(--yellow-bg);padding:1px 4px;border-radius:3px">pending</span></div></div>
-    <div class="sec-row"><div>QaaS</div><div style="color:var(--muted)">May 2026</div><div style="grid-column:span 2;color:var(--green-text)"><span style="color:var(--green-text)">&#10003; 15d ago</span></div></div>
-    <div class="sec-row"><div>R3</div><div style="color:var(--muted)">May 2026</div><div style="grid-column:span 2;color:var(--green-text)"><span style="color:var(--green-text)">&#10003; 12d ago</span></div></div>
-    <div class="sec-row"><div>RDB-KV</div><div style="color:var(--muted)">Apr 2026</div><div style="grid-column:span 2;color:var(--green-text)"><span style="color:var(--green-text)">&#10003; 28d ago</span></div></div>
-    <div class="sec-row"><div>RDB-PG</div><div style="color:var(--muted)">Apr 2026</div><div style="grid-column:span 2;color:var(--green-text)"><span style="color:var(--green-text)">&#10003; 35d ago</span></div></div>
-    <div class="sec-row"><div>MS SQL</div><div style="color:var(--muted)">Feb 2026</div><div style="grid-column:span 2;color:var(--yellow-text)"><span style="color:var(--yellow-text)">&#9888; 90d ago</span> <span style="font-size:9px;color:var(--yellow-text);background:var(--yellow-bg);padding:1px 4px;border-radius:3px">pending</span></div></div>
-    <div class="sec-row"><div>Elasticsearch</div><div style="color:var(--muted)">May 2026</div><div style="grid-column:span 2;color:var(--green-text)"><span style="color:var(--green-text)">&#10003; 18d ago</span></div></div>
-    <div class="sec-row"><div>ClickHouse</div><div style="color:var(--muted)">Mar 2026</div><div style="grid-column:span 2;color:var(--yellow-text)"><span style="color:var(--yellow-text)">&#9888; 55d ago</span> <span style="font-size:9px;color:var(--yellow-text);background:var(--yellow-bg);padding:1px 4px;border-radius:3px">pending</span></div></div>
-    <div class="sec-row"><div>Temporal</div><div style="color:var(--muted)">May 2026</div><div style="grid-column:span 2;color:var(--green-text)"><span style="color:var(--green-text)">&#10003; 8d ago</span></div></div>
-  </div>
-</div>
-<!-- 12-month trend charts for patching + encryption -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px">
-  <div>
-    <div class="sb-sec-label" style="margin-bottom:6px">Patching compliance trend <span class="sb-badge mock">MOCK</span></div>
-    <canvas data-bs="sec-patch" width="440" height="100" style="width:100%"></canvas>
-  </div>
-  <div>
-    <div class="sb-sec-label" style="margin-bottom:6px">Encryption at rest &amp; in transit <span class="sb-badge mock">MOCK</span></div>
-    <canvas data-bs="sec-enc" width="440" height="100" style="width:100%"></canvas>
-  </div>
-</div>
+      <div class="sb-sec-grid">
+        <div class="sb-sec-card red"><div class="sb-sec-label">Fleet patched (30d)</div><div class="sb-sec-val">82%</div><div class="sb-sec-target">target: 100%</div><canvas data-bs="sec-patch" width="220" height="80" style="margin-top:8px"></canvas><div class="sb-sec-status red">7 clusters overdue</div></div>
+        <div class="sb-sec-card yellow"><div class="sb-sec-label">Secrets rotation</div><div class="sb-sec-val">87%</div><div class="sb-sec-target">target: 100%</div><canvas data-bs="sec-secrets" width="220" height="80" style="margin-top:8px"></canvas><div class="sb-sec-status yellow">3 services pending</div></div>
+        <div class="sb-sec-card yellow"><div class="sb-sec-label">Encryption at rest</div><div class="sb-sec-val">95%</div><div class="sb-sec-target">target: 100%</div><canvas data-bs="sec-enc" width="220" height="80" style="margin-top:8px"></canvas><div class="sb-sec-status yellow">ClickHouse cluster gap</div></div>
+        <div class="sb-sec-card green"><div class="sb-sec-label">Vuln findings (&gt;SLA)</div><div class="sb-sec-val">0</div><div class="sb-sec-target">target: 0</div><canvas data-bs="sec-vuln" width="220" height="80" style="margin-top:8px"></canvas><div class="sb-sec-status green">Clean</div></div>
+      </div>
     </div>
   </div>
 
@@ -621,7 +577,9 @@ lc(document.getElementById('ch-budget-big'),{yN:1.6,yX:2.8,yT:4,pL:44,yF:functio
 (function(){var cv=document.getElementById('ch-inc-big'),lbls=M15,svcs=['EaaS/CRDB','RaaS','QaaS','RDB-KV','Elasticsearch'],iD={'EaaS/CRDB':[1,1,2,1,2,1,2,1,0,1,1,1,1,2,1],'RaaS':[2,2,3,1,2,3,4,2,1,3,3,2,2,3,3],'QaaS':[1,1,1,1,1,1,2,1,1,1,2,1,1,2,1],'RDB-KV':[0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],'Elasticsearch':[0,0,1,0,1,0,0,0,0,0,1,0,0,1,0]},vis={};svcs.forEach(function(s){vis[s]=true;});function render(){var _=sc(cv),ctx=_.ctx,w=_.w,h=_.h,pL=36,pR=8,pT=22,pB=28,cw=w-pL-pR,ch=h-pT-pB,n=lbls.length,gW=cw/n,bW=gW*.72,yM=12;ctx.strokeStyle=C.grd;ctx.lineWidth=1;ctx.font='10px Inter,sans-serif';ctx.fillStyle=C.mut;for(var i=0;i<=4;i++){var y=pT+ch-(ch*i/4);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(w-pR,y);ctx.stroke();ctx.fillText((yM*i/4).toFixed(0),6,y+3);}var yTg=pT+ch-(6/yM)*ch;ctx.strokeStyle=C.tgt;ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(pL,yTg);ctx.lineTo(w-pR,yTg);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=C.mut;ctx.font='9px Inter,sans-serif';ctx.fillText('target ≤6/mo',w-pR-60,yTg-4);lbls.forEach(function(l,i){var x0=pL+gW*i+(gW-bW)/2,yC=0,tot=0;svcs.forEach(function(sv){if(!vis[sv])return;var v=iD[sv][i];tot+=v;if(!v)return;var bH=(v/yM)*ch,y=pT+ch-bH-yC;ctx.fillStyle=SC[sv];ctx.fillRect(x0,y,bW,bH);if(bH>14){ctx.fillStyle='#fff';ctx.font='10px Inter,sans-serif';ctx.textAlign='center';ctx.fillText(v,x0+bW/2,y+bH/2+4);ctx.textAlign='start';}yC+=bH;});if(tot){var tY=pT+ch-(tot/yM)*ch;ctx.fillStyle='#0F172A';ctx.font='bold 11px Inter,sans-serif';ctx.textAlign='center';ctx.fillText(tot,x0+bW/2,tY-6);ctx.textAlign='start';}ctx.fillStyle=C.mut;ctx.font='10px Inter,sans-serif';ctx.textAlign='center';ctx.fillText(l,x0+bW/2,h-8);ctx.textAlign='start';});}render();var tEl=document.getElementById('inc-t');svcs.forEach(function(sv){var t=document.createElement('span');t.className='sb-svc-toggle';t.innerHTML='<span class="swatch" style="background:'+SC[sv]+'"></span>'+sv;t.onclick=function(){vis[sv]=!vis[sv];t.classList.toggle('off');render();};tEl.appendChild(t);});})();
 var SLb=['Jun25','Jul','Aug','Sep','Oct','Nov','Dec','Jan26','Feb','Mar','Apr','May'];
 bs(document.querySelector('[data-bs="sec-patch"]'),[68,70,72,73,75,74,76,77,78,79,80,82],C.red,{yN:50,yX:105,t:100,xL:SLb});
+bs(document.querySelector('[data-bs="sec-secrets"]'),[55,62,68,72,78,82,85,86,87,87,87,87],C.yel,{yN:50,yX:105,t:100,xL:SLb});
 bs(document.querySelector('[data-bs="sec-enc"]'),[88,89,90,91,92,93,94,94,94,95,95,95],C.yel,{yN:80,yX:105,t:100,xL:SLb});
+bs(document.querySelector('[data-bs="sec-vuln"]'),[2,1,1,0,1,0,0,0,0,0,0,0],C.grn,{yN:0,yX:5,t:0,xL:SLb});
 
 var TD={
   "eaas-avail":[[99.989,99.998,99.954,99.999,99.978,99.976,99.92,100.0,99.996,99.994,99.999,99.971],"#F59E0B",99.9,100.01],
