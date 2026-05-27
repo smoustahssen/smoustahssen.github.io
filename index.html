@@ -30,8 +30,15 @@
     .sb-section-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
     .sb-section-letter{background:var(--header);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px}
     .sb-section-desc{font-size:13px;color:var(--muted);margin-bottom:16px}
-    .sb-kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
-    .sb-kpi-card{background:var(--bg-card);border:1px solid var(--border);border-top:3px solid var(--muted-2);border-radius:8px;padding:14px 16px;position:relative}
+    .sb-kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:18px;margin-bottom:20px}
+    .sb-kpi-grid .sb-kpi-card{grid-column:span 2}
+    .sb-kpi-grid .sb-kpi-card:nth-child(4),.sb-kpi-grid .sb-kpi-card:nth-child(5){grid-column:span 3}
+    .sb-kpi-card{background:var(--bg-card);border:1px solid var(--border);border-top:3px solid var(--muted-2);border-radius:8px;padding:18px 20px;position:relative;cursor:pointer;transition:box-shadow .15s}
+    .sb-kpi-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+    .sb-kpi-exp{display:none;border-top:1px solid var(--border);margin-top:12px;padding-top:12px}
+    .sb-kpi-exp.open{display:block}
+    .sb-kpi-toggle{font-size:11px;color:var(--muted);margin-left:auto;user-select:none;padding:2px 6px;border:1px solid var(--border);border-radius:4px;background:#fff;transition:background .1s}
+    .sb-kpi-toggle:hover{background:var(--bg)}
     .sb-kpi-card.green{border-top-color:var(--green)}
     .sb-kpi-card.yellow{border-top-color:var(--yellow)}
     .sb-kpi-card.red{border-top-color:var(--red)}
@@ -41,7 +48,7 @@
     .sb-badge.src{background:var(--src-bg);color:var(--src-text)}
     .sb-badge.mock{background:var(--mock-bg);color:var(--mock-text)}
     .sb-kpi-value-row{display:flex;align-items:baseline;gap:6px;margin-bottom:4px;flex-wrap:wrap}
-    .sb-kpi-value{font-size:20px;font-weight:600;line-height:1}
+    .sb-kpi-value{font-size:28px;font-weight:700;line-height:1}
     .sb-kpi-value.warn{color:var(--yellow-text)}
     .sb-kpi-value.bad{color:var(--red-text)}
     .sb-kpi-value.good{color:var(--green-text)}
@@ -50,7 +57,7 @@
     .sb-kpi-delta.up-good{color:var(--green-text)}
     .sb-kpi-delta.down-good{color:var(--green-text)}
     .sb-kpi-delta.flat{color:var(--muted)}
-    .sb-kpi-context{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.35;min-height:26px}
+    .sb-kpi-context{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4;min-height:28px}
     .sb-kpi-chart{margin-top:6px}
     .sb-chart-legend{display:flex;gap:10px;font-size:9px;color:var(--muted);margin-top:4px;flex-wrap:wrap}
     .sb-chart-legend-item{display:flex;align-items:center;gap:3px}
@@ -149,6 +156,12 @@
     .si{font-size:14px;flex-shrink:0;margin-top:1px}
     .st{font-weight:600;color:var(--text)}
     .sd{color:var(--muted);margin-top:2px;line-height:1.4}
+    .svc-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;background:#fff;color:var(--text);transition:all .15s;font-family:inherit}
+    .svc-btn:hover{border-color:#94A3B8;background:#F8FAFC}
+    .svc-btn.active{background:var(--header);color:#fff;border-color:var(--header)}
+    .svc-btn .swatch{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .svc-detail{display:none}
+    .svc-detail.active{display:block}
     @media(max-width:768px){.sb-kpi-grid{grid-template-columns:1fr 1fr}.pillar-grid{grid-template-columns:1fr}.sb-sec-grid{grid-template-columns:1fr 1fr}}
   </style>
 </head>
@@ -159,13 +172,6 @@
       <div class="sb-logo"><div class="sb-logo-r">R</div><div><div class="sb-title">Storage Scorecard</div><div class="sb-subtitle">Roblox Infra Storage &middot; 10 services</div></div></div>
       <div style="text-align:right"><span class="sb-pill">M0 Mock &middot; May 2026</span><span class="sb-updated">Last updated: May 26, 2026 09:41 UTC</span></div>
     </div>
-    <div class="sb-header-metrics">
-      <div class="sb-hm-item"><span class="sb-hm-label">Portfolio E2E</span><span class="sb-hm-value warn">99.967%</span></div>
-      <div class="sb-hm-item"><span class="sb-hm-label">Total $/mo</span><span class="sb-hm-value">$2.34M</span></div>
-      <div class="sb-hm-item"><span class="sb-hm-label">Portfolio QPS</span><span class="sb-hm-value">4.2M</span></div>
-      <div class="sb-hm-item"><span class="sb-hm-label">P0+P1 (30d)</span><span class="sb-hm-value warn">5</span></div>
-      <div class="sb-hm-item"><span class="sb-hm-label">Support msgs (5.5mo)</span><span class="sb-hm-value">~950</span></div>
-    </div>
   </div>
   <div class="sb-tabs">
     <div class="sb-tab active" data-tab="ph" onclick="sw('ph')">Portfolio Health</div>
@@ -174,45 +180,88 @@
 
   <!-- PORTFOLIO HEALTH -->
   <div class="sb-body" id="t-ph">
-    <div class="sb-section-label">Key indicators &mdash; trailing 12mo + forecast</div>
+    <div class="sb-section-label">Key indicators &mdash; trailing 12mo + forecast &middot; <span style="font-weight:400;text-transform:none;letter-spacing:0">click any card to expand</span></div>
     <div class="sb-kpi-grid">
-      <div class="sb-kpi-card yellow">
-        <div class="sb-kpi-head"><span class="sb-kpi-label">E2E Availability</span><span class="sb-badge src">GRAFANA</span></div>
+      <!-- Card 1: E2E Availability -->
+      <div class="sb-kpi-card yellow" onclick="kpiX('kx1')">
+        <div class="sb-kpi-head"><span class="sb-kpi-label">E2E Availability</span><span class="sb-badge src">GRAFANA</span><span class="sb-kpi-toggle" id="kxt1">Expand &#9660;</span></div>
         <div class="sb-kpi-value-row"><span class="sb-kpi-value warn">99.967%</span><span class="sb-kpi-delta up-bad">&#8595; &minus;0.022pp</span></div>
         <div class="sb-kpi-context">Target &ge;99.99%. RaaS hot-key P0 is primary drag.</div>
-        <div class="sb-kpi-chart"><canvas id="ch-avail" width="200" height="70"></canvas></div>
+        <div class="sb-kpi-chart"><canvas id="ch-avail" width="240" height="80"></canvas></div>
         <div class="sb-chart-legend"><span class="sb-chart-legend-item"><span class="sb-legend-line actual"></span>Actual</span><span class="sb-chart-legend-item"><span class="sb-legend-line target"></span>Target</span></div>
+        <div class="sb-kpi-exp" id="kx1">
+          <div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--text)">Service breakdown &mdash; May 2026</div>
+          <div class="sb-bar-row"><div class="lbl">EaaS/CRDB</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:97%;background:#F59E0B"></div></div><div class="val">99.971% <span class="delta sb-trend up-bad">&#8595;</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">RaaS</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:94%;background:#EF4444"></div></div><div class="val">99.881% <span class="delta sb-trend up-bad">P0</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">QaaS</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:99%;background:#F59E0B"></div></div><div class="val">99.990% <span class="delta sb-trend flat">&#8212;</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">R3</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:100%;background:#10B981"></div></div><div class="val">100.000% <span class="delta sb-trend down-good">&#8593;</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">RDB-KV</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:100%;background:#10B981"></div></div><div class="val">99.997%</div></div>
+          <div style="margin-top:10px;font-size:11px;color:var(--muted)">MTTA portfolio: <b>8.3m</b> &middot; MTTR: <b>47m</b> &middot; Both within target</div>
+        </div>
       </div>
-      <div class="sb-kpi-card yellow">
-        <div class="sb-kpi-head"><span class="sb-kpi-label">P0+P1 Incidents</span><span class="sb-badge src">PAGERDUTY</span></div>
+      <!-- Card 2: P0+P1 Incidents -->
+      <div class="sb-kpi-card yellow" onclick="kpiX('kx2')">
+        <div class="sb-kpi-head"><span class="sb-kpi-label">P0+P1 Incidents</span><span class="sb-badge src">PAGERDUTY</span><span class="sb-kpi-toggle" id="kxt2">Expand &#9660;</span></div>
         <div class="sb-kpi-value-row"><span class="sb-kpi-value warn">5</span><span class="sb-kpi-delta down-good">&#8595; &minus;3 vs prior 30d</span></div>
         <div class="sb-kpi-context">MTTA 8.3m &middot; MTTR 47m &middot; both within target.</div>
-        <div class="sb-kpi-chart"><canvas id="ch-inc-mini" width="200" height="70"></canvas></div>
+        <div class="sb-kpi-chart"><canvas id="ch-inc-mini" width="240" height="80"></canvas></div>
         <div class="sb-chart-legend"><span class="sb-chart-legend-item"><span style="display:inline-block;width:10px;height:10px;background:#EF4444"></span>P0</span><span class="sb-chart-legend-item"><span style="display:inline-block;width:10px;height:10px;background:#F59E0B"></span>P1</span><span class="sb-chart-legend-item"><span class="sb-legend-line target"></span>Target &le;6</span></div>
-      </div>
-      <div class="sb-kpi-card red">
-        <div class="sb-kpi-head"><span class="sb-kpi-label">Security Posture</span><span class="sb-badge mock">MOCK</span></div>
-        <div class="sb-sec-split-mini">
-          <div class="sb-sec-half-mini"><div class="sb-sec-half-lbl">Patching</div><div class="sb-kpi-value-row"><span class="sb-sec-half-val bad">82%</span><span class="sb-kpi-delta up-good">+3pp</span></div><canvas id="ch-patch" width="95" height="40"></canvas></div>
-          <div class="sb-sec-half-mini"><div class="sb-sec-half-lbl">Secrets</div><div class="sb-kpi-value-row"><span class="sb-sec-half-val warn">87%</span><span class="sb-kpi-delta flat">flat</span></div><canvas id="ch-secrets" width="95" height="40"></canvas></div>
+        <div class="sb-kpi-exp" id="kx2">
+          <div style="font-size:12px;font-weight:600;margin-bottom:8px">Top incidents &mdash; May 2026</div>
+          <div class="sb-incident-card p0"><span class="sb-incident-sev p0">P0</span><span class="sb-incident-meta">May 14 &middot; RaaS &middot; 1h 22m</span><div class="sb-incident-desc">Hot-key on floodchecker-farms drove cluster-wide latency</div></div>
+          <div class="sb-incident-card p1"><span class="sb-incident-sev p1">P1</span><span class="sb-incident-meta">May 8 &middot; EaaS &middot; 38m</span><div class="sb-incident-desc">CRDB error rate spike on eaas-7, customer-impacting reads</div></div>
+          <div class="sb-incident-card p1"><span class="sb-incident-sev p1">P1</span><span class="sb-incident-meta">May 22 &middot; QaaS &middot; 52m</span><div class="sb-incident-desc">URP excursion on transcoding-events topic</div></div>
+          <div style="margin-top:8px;font-size:11px;color:var(--muted)">12-mo total: <b>47 P0+P1</b> &middot; Target: &le;6/mo &middot; Trend: improving</div>
         </div>
-        <div class="sb-kpi-context" style="margin-top:6px">Target 100%. 7 clusters overdue &middot; 3 services pending.</div>
-        <div class="sb-chart-legend"><span class="sb-chart-legend-item"><span class="sb-legend-line actual"></span>Actual</span><span class="sb-chart-legend-item"><span class="sb-legend-line target"></span>Target</span></div>
       </div>
-      <div class="sb-kpi-card yellow">
-        <div class="sb-kpi-head"><span class="sb-kpi-label">Budget vs Actual</span><span class="sb-badge src">FINANCE</span></div>
+      <!-- Card 3: Security Posture -->
+      <div class="sb-kpi-card red" onclick="kpiX('kx3')">
+        <div class="sb-kpi-head"><span class="sb-kpi-label">Security Posture</span><span class="sb-badge mock">MOCK</span><span class="sb-kpi-toggle" id="kxt3">Expand &#9660;</span></div>
+        <div class="sb-sec-split-mini">
+          <div class="sb-sec-half-mini"><div class="sb-sec-half-lbl">Patching</div><div class="sb-kpi-value-row"><span class="sb-sec-half-val bad" style="font-size:26px;font-weight:700">82%</span><span class="sb-kpi-delta up-good">+3pp</span></div><canvas id="ch-patch" width="100" height="44"></canvas></div>
+          <div class="sb-sec-half-mini"><div class="sb-sec-half-lbl">Secrets</div><div class="sb-kpi-value-row"><span class="sb-sec-half-val warn" style="font-size:26px;font-weight:700">87%</span><span class="sb-kpi-delta flat">flat</span></div><canvas id="ch-secrets" width="100" height="44"></canvas></div>
+        </div>
+        <div class="sb-kpi-context" style="margin-top:8px">Target 100%. 7 clusters overdue &middot; 3 services pending.</div>
+        <div class="sb-kpi-exp" id="kx3">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
+            <div><span style="font-weight:600;color:var(--red-text)">Patching gaps (7 clusters)</span><div style="color:var(--muted);margin-top:4px;line-height:1.5">EaaS 86% &middot; MS SQL 2 nodes &middot; Elasticsearch 1 cluster overdue &gt;30d</div></div>
+            <div><span style="font-weight:600;color:var(--yellow-text)">Secrets rotation pending</span><div style="color:var(--muted);margin-top:4px;line-height:1.5">ClickHouse, RaaS, MS SQL &mdash; blocked on team bandwidth, not tooling</div></div>
+          </div>
+          <div style="margin-top:8px;font-size:11px"><span style="color:var(--yellow-text);font-weight:600">Encryption at rest: 95%</span> &mdash; ClickHouse cluster gap &middot; <span style="color:var(--green-text);font-weight:600">Vuln findings &gt;SLA: 0</span></div>
+        </div>
+      </div>
+      <!-- Card 4: Budget vs Actual (spans 3 cols) -->
+      <div class="sb-kpi-card yellow" onclick="kpiX('kx4')">
+        <div class="sb-kpi-head"><span class="sb-kpi-label">Budget vs Actual</span><span class="sb-badge src">FINANCE</span><span class="sb-kpi-toggle" id="kxt4">Expand &#9660;</span></div>
         <div class="sb-kpi-value-row"><span class="sb-kpi-value warn">$2.34M</span><span class="sb-kpi-delta up-bad">+4.0% over</span></div>
         <div class="sb-kpi-context">CRDB licensing renewal (one-time). Net of this, flat.</div>
-        <div class="sb-kpi-chart"><canvas id="ch-budget-mini" width="200" height="70"></canvas></div>
+        <div class="sb-kpi-chart"><canvas id="ch-budget-mini" width="340" height="90"></canvas></div>
         <div class="sb-chart-legend"><span class="sb-chart-legend-item"><span class="sb-legend-line actual"></span>Actual</span><span class="sb-chart-legend-item"><span class="sb-legend-line target"></span>Budget</span><span class="sb-chart-legend-item"><span class="sb-legend-line forecast"></span>Forecast</span></div>
+        <div class="sb-kpi-exp" id="kx4">
+          <div style="font-size:12px;font-weight:600;margin-bottom:8px">Top spend drivers &mdash; May 2026</div>
+          <div class="sb-bar-row"><div class="lbl">EaaS/CRDB</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:100%"></div></div><div class="val">$890K <span class="delta sb-trend up-bad">+5%</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">MS SQL</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:38%"></div></div><div class="val">$340K <span class="delta sb-trend flat">+1%</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">RaaS</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:31%"></div></div><div class="val">$280K <span class="delta sb-trend down-good">&minus;3%</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">ClickHouse</div><div class="sb-bar-track"><div class="sb-bar-fill movers" style="width:16%"></div></div><div class="val">$140K <span class="delta sb-trend up-bad">+22%</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">Temporal</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:2%"></div></div><div class="val">$20K <span class="delta sb-trend up-bad">+31%</span></div></div>
+        </div>
       </div>
-      <div class="sb-kpi-card yellow" id="growth-card">
-        <div class="sb-kpi-head"><span class="sb-kpi-label">Consumption vs Engagement DAU</span><span class="sb-info-icon" onclick="tt()">i</span><span class="sb-badge mock">MOCK</span></div>
+      <!-- Card 5: Consumption vs DAU (spans 3 cols) -->
+      <div class="sb-kpi-card yellow" id="growth-card" onclick="kpiX('kx5')">
+        <div class="sb-kpi-head"><span class="sb-kpi-label">Consumption vs Engagement DAU</span><span class="sb-info-icon" onclick="event.stopPropagation();tt()">i</span><span class="sb-badge mock">MOCK</span><span class="sb-kpi-toggle" id="kxt5">Expand &#9660;</span></div>
         <div class="sb-info-tooltip" id="gtt">Each service MoM consumption growth weighted by spend share, divided by Roblox engagement-hour MoM growth. &gt;1.0&times; = Storage growing faster than business.</div>
         <div class="sb-kpi-value-row"><span class="sb-kpi-value warn">1.4&times;</span><span class="sb-kpi-delta up-bad">&#8593; +0.1&times; MoM</span></div>
         <div class="sb-kpi-context">Storage outpacing business. ClickHouse + EaaS primary drivers.</div>
-        <div class="sb-kpi-chart"><canvas id="ch-growth-mini" width="200" height="70"></canvas></div>
+        <div class="sb-kpi-chart"><canvas id="ch-growth-mini" width="340" height="90"></canvas></div>
         <div class="sb-chart-legend"><span class="sb-chart-legend-item"><span class="sb-legend-line actual"></span>Ratio</span><span class="sb-chart-legend-item"><span class="sb-legend-line target"></span>Parity 1.0&times;</span></div>
+        <div class="sb-kpi-exp" id="kx5">
+          <div style="font-size:12px;font-weight:600;margin-bottom:8px">Largest over-indexers vs business growth</div>
+          <div class="sb-bar-row"><div class="lbl">ClickHouse</div><div class="sb-bar-track"><div class="sb-bar-fill movers" style="width:100%"></div></div><div class="val">3.8&times; <span class="delta sb-trend up-bad">&#8593;</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">Temporal</div><div class="sb-bar-track"><div class="sb-bar-fill movers" style="width:92%"></div></div><div class="val">3.5&times; <span class="delta sb-trend up-bad">&#8593;</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">EaaS/CRDB</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:55%;background:#F59E0B"></div></div><div class="val">2.1&times; <span class="delta sb-trend up-bad">&#8593;</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">QaaS</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:42%;background:#F59E0B"></div></div><div class="val">1.6&times; <span class="delta sb-trend flat">&#8212;</span></div></div>
+          <div class="sb-bar-row"><div class="lbl">MS SQL</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:18%;background:#10B981"></div></div><div class="val">0.7&times; <span class="delta sb-trend down-good">&#8595;</span></div></div>
+        </div>
       </div>
     </div>
 
@@ -300,8 +349,25 @@
       <span><span class="dot x" style="display:inline-block;margin-right:4px"></span>Deprioritized</span>
     </div>
 
-    <div style="margin-top:28px"><div class="sb-section-label">EaaS / CRDB &mdash; Service Deep-Dive</div><div style="font-size:11px;color:var(--muted);margin-bottom:10px">Leads: Kai Liu &middot; Gopal Anand &middot; On-prem + 1 cloud (OH)</div></div>
-    <div class="svc-page">
+    <!-- Service selector -->
+    <div style="margin-top:28px;margin-bottom:12px">
+      <div class="sb-section-label" style="margin-bottom:8px">Service Deep-Dive &mdash; select a service</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px" id="svc-sel">
+        <button class="svc-btn active" data-svc="eaas" onclick="showSvc('eaas')"><span class="swatch" style="background:#2563EB"></span>EaaS / CRDB</button>
+        <button class="svc-btn" data-svc="raas" onclick="showSvc('raas')"><span class="swatch" style="background:#EF4444"></span>RaaS</button>
+        <button class="svc-btn" data-svc="qaas" onclick="showSvc('qaas')"><span class="swatch" style="background:#8B5CF6"></span>QaaS</button>
+        <button class="svc-btn" data-svc="r3" onclick="showSvc('r3')"><span class="swatch" style="background:#10B981"></span>R3 (Ceph)</button>
+        <button class="svc-btn" data-svc="rdbkv" onclick="showSvc('rdbkv')"><span class="swatch" style="background:#F59E0B"></span>RDB-KV</button>
+        <button class="svc-btn" data-svc="rdbpg" onclick="showSvc('rdbpg')"><span class="swatch" style="background:#06B6D4"></span>RDB-PG</button>
+        <button class="svc-btn" data-svc="mssql" onclick="showSvc('mssql')"><span class="swatch" style="background:#EC4899"></span>MS SQL</button>
+        <button class="svc-btn" data-svc="es" onclick="showSvc('es')"><span class="swatch" style="background:#14B8A6"></span>Elasticsearch</button>
+        <button class="svc-btn" data-svc="ch" onclick="showSvc('ch')"><span class="swatch" style="background:#F97316"></span>ClickHouse</button>
+        <button class="svc-btn" data-svc="tmp" onclick="showSvc('tmp')"><span class="swatch" style="background:#84CC16"></span>Temporal</button>
+      </div>
+    </div>
+
+    <!-- EaaS / CRDB -->
+    <div class="svc-page svc-detail active" id="svc-eaas">
       <div class="svc-ph"><div><div class="svc-pt">EaaS / CRDB</div><div class="svc-pm">Entities-as-a-Service &middot; Support channel: #dbplat-access</div></div><div style="display:flex;gap:10px;align-items:center"><span class="sb-badge mock">MOCK</span><span style="font-size:12px;color:#94A3B8">Overall: <span style="color:#F59E0B;font-weight:600">Yellow</span></span></div></div>
       <div class="svc-pb">
         <div class="pillar-grid">
@@ -353,6 +419,162 @@
       </div>
     </div>
 
+    <!-- RaaS -->
+    <div class="svc-page svc-detail" id="svc-raas">
+      <div class="svc-ph" style="background:#7F1D1D"><div><div class="svc-pt">RaaS</div><div class="svc-pm">Redis-as-a-Service &middot; Lead: Sen Li</div></div><div style="display:flex;gap:10px;align-items:center"><span class="sb-badge mock">MOCK</span><span style="font-size:12px;color:#94A3B8">Overall: <span style="color:#EF4444;font-weight:600">Red</span></span></div></div>
+      <div class="svc-pb">
+        <div class="pillar-grid">
+          <div class="pc r"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block"></span>Reliability</div><div class="ps"><span class="ps-l">E2E success (30d)</span><span class="ps-v bad">99.881%</span></div><div class="ps"><span class="ps-l">Target</span><span class="ps-v">&ge;99.99%</span></div><div class="ps"><span class="ps-l">P0+P1 (30d)</span><span class="ps-v bad">3</span></div><div class="ps"><span class="ps-l">Root cause</span><span class="ps-v bad">Hot-key SLO breach May 14</span></div><div class="ps"><span class="ps-l">MTTA</span><span class="ps-v good">6.2m</span></div><div class="ps"><span class="ps-l">MTTR</span><span class="ps-v warn">82m (P0)</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Performance</div><div class="ps"><span class="ps-l">Read p50</span><span class="ps-v good">0.3ms</span></div><div class="ps"><span class="ps-l">Read p99</span><span class="ps-v warn">12.1ms</span></div><div class="ps"><span class="ps-l">Memory fragmentation</span><span class="ps-v warn">1.34 (elevated)</span></div><div class="ps"><span class="ps-l">Hit rate</span><span class="ps-v good">94.2%</span></div><div class="ps"><span class="ps-l">Eviction rate</span><span class="ps-v good">0.02%</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Capacity &amp; Utilization</div><div class="ps"><span class="ps-l">Total allocated</span><span class="ps-v">48 TB</span></div><div class="ps"><span class="ps-l">Avg utilization</span><span class="ps-v good">62%</span></div><div class="ps"><span class="ps-l">Time-to-exhaustion</span><span class="ps-v good">&gt;180d</span></div><div class="ps"><span class="ps-l">Reclamation identified</span><span class="ps-v good">~26 TB</span></div><div class="ps"><span class="ps-l">Top over-provisioned</span><span class="ps-v" style="font-size:10px">floodchecker -2.6TB &middot; eaas-au -7.5TB</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Cost &amp; Efficiency</div><div class="ps"><span class="ps-l">Total $/month</span><span class="ps-v good">$280K</span></div><div class="ps"><span class="ps-l">MoM trend</span><span class="ps-v good">&minus;3%</span></div><div class="ps"><span class="ps-l">$/GB-RAM</span><span class="ps-v good">Trending down</span></div><div class="ps"><span class="ps-l">Reclamation savings</span><span class="ps-v good">~$42K/mo potential</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Demand &amp; Toil</div><div class="ps"><span class="ps-l">Support posts (30d)</span><span class="ps-v good">22</span></div><div class="ps"><span class="ps-l">AI-resolution rate</span><span class="ps-v good">82% (18/22)</span></div><div class="ps"><span class="ps-l">Oncall pages (30d)</span><span class="ps-v warn">3</span></div><div class="ps"><span class="ps-l">Trend</span><span class="ps-v good">Stable</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Security</div><div class="ps"><span class="ps-l">Patching SLO</span><span class="ps-v warn">91% (2 clusters overdue)</span></div><div class="ps"><span class="ps-l">Secrets rotation</span><span class="ps-v warn">Pending</span></div><div class="ps"><span class="ps-l">Encryption at rest</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">High/crit vulns &gt;SLA</span><span class="ps-v good">0</span></div></div>
+        </div>
+        <div style="margin-top:16px;background:var(--red-bg);border:1px solid #FECACA;border-radius:6px;padding:12px 14px">
+          <div style="font-size:12px;font-weight:600;color:var(--red-text);margin-bottom:6px">&#9888; P0 Root Cause: Hot-Key Pattern on floodchecker-farms</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.5">May 14 P0: single hot key on floodchecker-farms drove cluster-wide latency for 1h 22m. Key sharding or client-side scatter is the recommended mitigation. Reclamation of 4 over-provisioned clusters (identified) should proceed after reliability fix.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QaaS -->
+    <div class="svc-page svc-detail" id="svc-qaas">
+      <div class="svc-ph" style="background:#4C1D95"><div><div class="svc-pt">QaaS</div><div class="svc-pm">Queue-as-a-Service &middot; Lead: Jeffrey Zhong</div></div><div style="display:flex;gap:10px;align-items:center"><span class="sb-badge mock">MOCK</span><span style="font-size:12px;color:#94A3B8">Overall: <span style="color:#F59E0B;font-weight:600">Yellow</span></span></div></div>
+      <div class="svc-pb">
+        <div class="pillar-grid">
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Reliability</div><div class="ps"><span class="ps-l">E2E success (30d)</span><span class="ps-v warn">99.990%</span></div><div class="ps"><span class="ps-l">Target</span><span class="ps-v">&ge;99.99%</span></div><div class="ps"><span class="ps-l">P0+P1 (30d)</span><span class="ps-v warn">1</span></div><div class="ps"><span class="ps-l">Last incident</span><span class="ps-v warn">May 22 &middot; URP excursion 52m</span></div><div class="ps"><span class="ps-l">MTTA</span><span class="ps-v good">7.4m</span></div><div class="ps"><span class="ps-l">MTTR</span><span class="ps-v good">52m</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Performance</div><div class="ps"><span class="ps-l">Consumer lag p99</span><span class="ps-v good">120ms</span></div><div class="ps"><span class="ps-l">Publish latency p50</span><span class="ps-v good">2.1ms</span></div><div class="ps"><span class="ps-l">Throughput</span><span class="ps-v good">1.8M msg/s</span></div><div class="ps"><span class="ps-l">Partition utilization</span><span class="ps-v good">61%</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Capacity &amp; Utilization</div><div class="ps"><span class="ps-l">Broker count</span><span class="ps-v">42</span></div><div class="ps"><span class="ps-l">Avg disk utilization</span><span class="ps-v good">54%</span></div><div class="ps"><span class="ps-l">Time-to-exhaustion</span><span class="ps-v good">&gt;120d</span></div><div class="ps"><span class="ps-l">MoM throughput growth</span><span class="ps-v warn">+12%</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Cost &amp; Efficiency</div><div class="ps"><span class="ps-l">Total $/month</span><span class="ps-v warn">$190K</span></div><div class="ps"><span class="ps-l">MoM trend</span><span class="ps-v warn">+8%</span></div><div class="ps"><span class="ps-l">$/GB transferred</span><span class="ps-v warn">+8% MoM</span></div><div class="ps"><span class="ps-l">Tiered storage savings</span><span class="ps-v good">$18K/mo realized</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Demand &amp; Toil</div><div class="ps"><span class="ps-l">CDC access tickets (5.5mo)</span><span class="ps-v warn">~40 (DBDATAQUEUE Jira)</span></div><div class="ps"><span class="ps-l">Oncall pages (30d)</span><span class="ps-v good">1</span></div><div class="ps"><span class="ps-l">Manual topic provisioning</span><span class="ps-v warn">~8/mo</span></div><div class="ps"><span class="ps-l">Automation potential</span><span class="ps-v warn">Self-serve CDC access</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Security</div><div class="ps"><span class="ps-l">Patching SLO</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Secrets rotation</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Encryption at rest</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">High/crit vulns &gt;SLA</span><span class="ps-v good">0</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- R3 / Ceph -->
+    <div class="svc-page svc-detail" id="svc-r3">
+      <div class="svc-ph" style="background:#064E3B"><div><div class="svc-pt">R3 (Ceph)</div><div class="svc-pm">Object Storage &middot; Lead: Jeffrey Zhong</div></div><div style="display:flex;gap:10px;align-items:center"><span class="sb-badge mock">MOCK</span><span style="font-size:12px;color:#94A3B8">Overall: <span style="color:#10B981;font-weight:600">Green</span></span></div></div>
+      <div class="svc-pb">
+        <div class="pillar-grid">
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Reliability</div><div class="ps"><span class="ps-l">E2E success (30d)</span><span class="ps-v good">100.000%</span></div><div class="ps"><span class="ps-l">P0+P1 (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">MTTA</span><span class="ps-v good">N/A</span></div><div class="ps"><span class="ps-l">Data durability</span><span class="ps-v good">11 nines</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Performance</div><div class="ps"><span class="ps-l">GET p50</span><span class="ps-v good">8ms</span></div><div class="ps"><span class="ps-l">GET p99</span><span class="ps-v good">42ms</span></div><div class="ps"><span class="ps-l">PUT p99</span><span class="ps-v good">65ms</span></div><div class="ps"><span class="ps-l">Throughput</span><span class="ps-v good">18 Gbps peak</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Capacity &amp; Utilization</div><div class="ps"><span class="ps-l">Total capacity</span><span class="ps-v">12 PB</span></div><div class="ps"><span class="ps-l">Avg OSD utilization</span><span class="ps-v warn">74% (variance high)</span></div><div class="ps"><span class="ps-l">Scrub backlog</span><span class="ps-v warn">8 PGs overdue</span></div><div class="ps"><span class="ps-l">Time-to-exhaustion</span><span class="ps-v good">&gt;270d</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Cost &amp; Efficiency</div><div class="ps"><span class="ps-l">Total $/month</span><span class="ps-v good">$240K</span></div><div class="ps"><span class="ps-l">MoM trend</span><span class="ps-v good">flat</span></div><div class="ps"><span class="ps-l">$/TB stored</span><span class="ps-v good">$20/TB (best in fleet)</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Demand &amp; Toil</div><div class="ps"><span class="ps-l">Support posts (30d)</span><span class="ps-v good">4</span></div><div class="ps"><span class="ps-l">Oncall pages (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">Trend</span><span class="ps-v good">Lowest toil in fleet</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Security</div><div class="ps"><span class="ps-l">Patching SLO</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Secrets rotation</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Encryption at rest</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">High/crit vulns &gt;SLA</span><span class="ps-v good">0</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RDB-KV -->
+    <div class="svc-page svc-detail" id="svc-rdbkv">
+      <div class="svc-ph" style="background:#78350F"><div><div class="svc-pt">RDB-KV</div><div class="svc-pm">Relational + KV &middot; Lead: Dikang Gu</div></div><div style="display:flex;gap:10px;align-items:center"><span class="sb-badge mock">MOCK</span><span style="font-size:12px;color:#94A3B8">Overall: <span style="color:#10B981;font-weight:600">Green</span></span></div></div>
+      <div class="svc-pb">
+        <div class="pillar-grid">
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Reliability</div><div class="ps"><span class="ps-l">E2E success (30d)</span><span class="ps-v good">99.997%</span></div><div class="ps"><span class="ps-l">P0+P1 (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">Last incident</span><span class="ps-v good">Dec 2025 (P1)</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Performance</div><div class="ps"><span class="ps-l">Read p50</span><span class="ps-v good">0.8ms</span></div><div class="ps"><span class="ps-l">Read p99</span><span class="ps-v good">4.2ms</span></div><div class="ps"><span class="ps-l">Gate: multi-cell readiness</span><span class="ps-v warn">Q3 2026 hard gate</span></div><div class="ps"><span class="ps-l">Multi-cell prep</span><span class="ps-v warn">In progress</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Capacity &amp; Utilization</div><div class="ps"><span class="ps-l">Total capacity</span><span class="ps-v">8 TB</span></div><div class="ps"><span class="ps-l">Avg utilization</span><span class="ps-v good">58%</span></div><div class="ps"><span class="ps-l">Multi-cell hard gate</span><span class="ps-v warn">Q3 2026 deadline</span></div><div class="ps"><span class="ps-l">Time-to-exhaustion</span><span class="ps-v good">&gt;180d</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Cost &amp; Efficiency</div><div class="ps"><span class="ps-l">Total $/month</span><span class="ps-v good">$80K</span></div><div class="ps"><span class="ps-l">MoM trend</span><span class="ps-v good">flat</span></div><div class="ps"><span class="ps-l">$/M ops</span><span class="ps-v good">$0.18</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Demand &amp; Toil</div><div class="ps"><span class="ps-l">Support posts (30d)</span><span class="ps-v good">6</span></div><div class="ps"><span class="ps-l">Oncall pages (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">Trend</span><span class="ps-v good">Low &amp; stable</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Security</div><div class="ps"><span class="ps-l">Patching SLO</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Secrets rotation</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Encryption at rest</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">High/crit vulns &gt;SLA</span><span class="ps-v good">0</span></div></div>
+        </div>
+        <div style="margin-top:16px;background:var(--yellow-bg);border:1px solid #FDE68A;border-radius:6px;padding:12px 14px">
+          <div style="font-size:12px;font-weight:600;color:var(--yellow-text);margin-bottom:4px">&#9888; Q3 2026: Multi-Cell Readiness Hard Gate</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.5">RDB-KV must meet multi-cell readiness requirements by Q3 2026. Current prep is in progress. Gate failure would block growth use cases. Track weekly against milestone checklist.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RDB-PG -->
+    <div class="svc-page svc-detail" id="svc-rdbpg">
+      <div class="svc-ph" style="background:#155E75"><div><div class="svc-pt">RDB-PG</div><div class="svc-pm">PostgreSQL &middot; Lead: Yingjie He</div></div><div style="display:flex;gap:10px;align-items:center"><span class="sb-badge mock">MOCK</span><span style="font-size:12px;color:#94A3B8">Overall: <span style="color:#10B981;font-weight:600">Green</span></span></div></div>
+      <div class="svc-pb">
+        <div class="pillar-grid">
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Reliability</div><div class="ps"><span class="ps-l">E2E success (30d)</span><span class="ps-v good">99.999%</span></div><div class="ps"><span class="ps-l">P0+P1 (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">Last incident</span><span class="ps-v good">Sep 2025</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Performance</div><div class="ps"><span class="ps-l">Query p50</span><span class="ps-v good">1.4ms</span></div><div class="ps"><span class="ps-l">Query p99</span><span class="ps-v good">9.8ms</span></div><div class="ps"><span class="ps-l">Slow queries (&gt;1s)</span><span class="ps-v good">3 queries flagged</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Capacity &amp; Utilization</div><div class="ps"><span class="ps-l">Total storage</span><span class="ps-v">2.2 TB</span></div><div class="ps"><span class="ps-l">Avg CPU</span><span class="ps-v good">34%</span></div><div class="ps"><span class="ps-l">Time-to-exhaustion</span><span class="ps-v good">&gt;365d</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Cost &amp; Efficiency</div><div class="ps"><span class="ps-l">Total $/month</span><span class="ps-v good">$30K</span></div><div class="ps"><span class="ps-l">MoM trend</span><span class="ps-v good">flat</span></div></div>
+          <div class="pc x" style="opacity:.7"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--muted-2);display:inline-block"></span>Demand &amp; Toil <span class="sb-badge src" style="margin-left:4px">DEPRIORITIZED</span></div><div class="ps"><span class="ps-l">Status</span><span class="ps-v" style="color:var(--muted)">Q2 2026 deprioritized</span></div><div class="ps"><span class="ps-l">Reason</span><span class="ps-v" style="color:var(--muted)">Low incident rate; team focused elsewhere</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Security</div><div class="ps"><span class="ps-l">Patching SLO</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Secrets rotation</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Encryption at rest</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">High/crit vulns &gt;SLA</span><span class="ps-v good">0</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MS SQL -->
+    <div class="svc-page svc-detail" id="svc-mssql">
+      <div class="svc-ph" style="background:#831843"><div><div class="svc-pt">MS SQL</div><div class="svc-pm">SQL Server &middot; Lead: Gopal Anand</div></div><div style="display:flex;gap:10px;align-items:center"><span class="sb-badge mock">MOCK</span><span style="font-size:12px;color:#94A3B8">Overall: <span style="color:#EF4444;font-weight:600">Red</span></span></div></div>
+      <div class="svc-pb">
+        <div class="pillar-grid">
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Reliability</div><div class="ps"><span class="ps-l">E2E success (30d)</span><span class="ps-v good">99.994%</span></div><div class="ps"><span class="ps-l">P0+P1 (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">Trend</span><span class="ps-v good">Stable</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Performance</div><div class="ps"><span class="ps-l">Query p50</span><span class="ps-v good">3.2ms</span></div><div class="ps"><span class="ps-l">Query p99</span><span class="ps-v good">28ms</span></div><div class="ps"><span class="ps-l">Slow queries (&gt;2s)</span><span class="ps-v good">7/mo avg</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Capacity &amp; Utilization</div><div class="ps"><span class="ps-l">HW lifecycle cost 2026</span><span class="ps-v warn">$5M refresh</span></div><div class="ps"><span class="ps-l">HW lifecycle cost 2027</span><span class="ps-v bad">~$17M refresh</span></div><div class="ps"><span class="ps-l">Strategy</span><span class="ps-v warn">OSS migration window</span></div><div class="ps"><span class="ps-l">Time-to-exhaustion</span><span class="ps-v warn">~90d (some nodes)</span></div></div>
+          <div class="pc r"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block"></span>Cost &amp; Efficiency</div><div class="ps"><span class="ps-l">Total $/month</span><span class="ps-v bad">$340K</span></div><div class="ps"><span class="ps-l">License type</span><span class="ps-v bad">Microsoft SQL Server (proprietary)</span></div><div class="ps"><span class="ps-l">Target trajectory</span><span class="ps-v warn">Declining (OSS migration)</span></div><div class="ps"><span class="ps-l">OSS migration status</span><span class="ps-v warn">In progress (multi-year)</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Demand &amp; Toil</div><div class="ps"><span class="ps-l">Active backfills (1B+ rows)</span><span class="ps-v warn">4 in flight</span></div><div class="ps"><span class="ps-l">Backfill sources</span><span class="ps-v" style="font-size:10px">Arrakis &middot; AssetHashes &middot; phone-numbers &middot; Transactions</span></div><div class="ps"><span class="ps-l">Oncall pages (30d)</span><span class="ps-v good">1</span></div><div class="ps"><span class="ps-l">Trend</span><span class="ps-v warn">Increasing (migration volume)</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Security</div><div class="ps"><span class="ps-l">Patching SLO</span><span class="ps-v warn">94% (2 nodes overdue)</span></div><div class="ps"><span class="ps-l">Secrets rotation</span><span class="ps-v warn">Pending (1 svc)</span></div><div class="ps"><span class="ps-l">Encryption at rest</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">High/crit vulns &gt;SLA</span><span class="ps-v good">0</span></div></div>
+        </div>
+        <div style="margin-top:16px;background:var(--red-bg);border:1px solid #FECACA;border-radius:6px;padding:12px 14px">
+          <div style="font-size:12px;font-weight:600;color:var(--red-text);margin-bottom:6px">&#128308; Top Portfolio Cost Reduction: MSSQL &#8594; OSS</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.5">$340K/mo licensing + $22M in HW refreshes over 2026-2027. Consolidating the migration during the 2026 refresh window is the highest-ROI action in the portfolio. Migration already in progress across Arrakis, AssetHashes, phone-numbers, and Transactions (1B-4B row backfills each).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Elasticsearch -->
+    <div class="svc-page svc-detail" id="svc-es">
+      <div class="svc-ph" style="background:#134E4A"><div><div class="svc-pt">Elasticsearch</div><div class="svc-pm">Search &amp; Analytics &middot; Lead: Gopal Anand</div></div><div style="display:flex;gap:10px;align-items:center"><span class="sb-badge mock">MOCK</span><span style="font-size:12px;color:#94A3B8">Overall: <span style="color:#10B981;font-weight:600">Green</span></span></div></div>
+      <div class="svc-pb">
+        <div class="pillar-grid">
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Reliability</div><div class="ps"><span class="ps-l">E2E success (30d)</span><span class="ps-v good">99.996%</span></div><div class="ps"><span class="ps-l">P0+P1 (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">Cluster health</span><span class="ps-v good">Green</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Performance</div><div class="ps"><span class="ps-l">Search p50</span><span class="ps-v good">12ms</span></div><div class="ps"><span class="ps-l">Search p99</span><span class="ps-v good">88ms</span></div><div class="ps"><span class="ps-l">JVM heap pressure</span><span class="ps-v warn">2 clusters &gt;80%</span></div><div class="ps"><span class="ps-l">GC pause p99</span><span class="ps-v warn">220ms (elevated)</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Capacity &amp; Utilization</div><div class="ps"><span class="ps-l">Total indices</span><span class="ps-v">1,840</span></div><div class="ps"><span class="ps-l">Avg shard utilization</span><span class="ps-v good">62%</span></div><div class="ps"><span class="ps-l">Time-to-exhaustion</span><span class="ps-v good">&gt;180d</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Cost &amp; Efficiency</div><div class="ps"><span class="ps-l">Total $/month</span><span class="ps-v good">$130K</span></div><div class="ps"><span class="ps-l">MoM trend</span><span class="ps-v good">+2%</span></div><div class="ps"><span class="ps-l">Cold tier savings</span><span class="ps-v good">$12K/mo realized</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Demand &amp; Toil</div><div class="ps"><span class="ps-l">Support posts (30d)</span><span class="ps-v good">8</span></div><div class="ps"><span class="ps-l">Oncall pages (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">Trend</span><span class="ps-v good">Low &amp; stable</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Security</div><div class="ps"><span class="ps-l">Patching SLO</span><span class="ps-v warn">96% (1 cluster overdue)</span></div><div class="ps"><span class="ps-l">Secrets rotation</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Encryption at rest</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">High/crit vulns &gt;SLA</span><span class="ps-v good">0</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ClickHouse -->
+    <div class="svc-page svc-detail" id="svc-ch">
+      <div class="svc-ph" style="background:#7C2D12"><div><div class="svc-pt">ClickHouse</div><div class="svc-pm">Analytical Storage &middot; Lead: Gopal Anand</div></div><div style="display:flex;gap:10px;align-items:center"><span class="sb-badge mock">MOCK</span><span style="font-size:12px;color:#94A3B8">Overall: <span style="color:#F59E0B;font-weight:600">Yellow</span></span></div></div>
+      <div class="svc-pb">
+        <div class="pillar-grid">
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Reliability</div><div class="ps"><span class="ps-l">E2E success (30d)</span><span class="ps-v good">99.993%</span></div><div class="ps"><span class="ps-l">P0+P1 (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">Trend</span><span class="ps-v good">Stable</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Performance</div><div class="ps"><span class="ps-l">Query p50</span><span class="ps-v good">42ms</span></div><div class="ps"><span class="ps-l">Query p99</span><span class="ps-v warn">3.2s</span></div><div class="ps"><span class="ps-l">Merge backlog</span><span class="ps-v warn">Elevated (leading indicator)</span></div><div class="ps"><span class="ps-l">Parts count</span><span class="ps-v warn">High on 2 tables</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Capacity &amp; Utilization</div><div class="ps"><span class="ps-l">Total storage</span><span class="ps-v">88 TB</span></div><div class="ps"><span class="ps-l">Avg CPU</span><span class="ps-v good">48%</span></div><div class="ps"><span class="ps-l">Time-to-exhaustion</span><span class="ps-v good">&gt;150d</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Cost &amp; Efficiency</div><div class="ps"><span class="ps-l">Total $/month</span><span class="ps-v warn">$140K</span></div><div class="ps"><span class="ps-l">MoM trend</span><span class="ps-v bad">+22% (fastest riser)</span></div><div class="ps"><span class="ps-l">Primary driver</span><span class="ps-v warn">Cloud egress &amp; compute</span></div><div class="ps"><span class="ps-l">Repatriation status</span><span class="ps-v warn">In progress</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Demand &amp; Toil</div><div class="ps"><span class="ps-l">Support posts (30d)</span><span class="ps-v good">7</span></div><div class="ps"><span class="ps-l">Oncall pages (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">Trend</span><span class="ps-v good">Stable</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Security</div><div class="ps"><span class="ps-l">Patching SLO</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Secrets rotation</span><span class="ps-v warn">In progress</span></div><div class="ps"><span class="ps-l">Encryption at rest</span><span class="ps-v warn">95% (1 cluster gap)</span></div><div class="ps"><span class="ps-l">High/crit vulns &gt;SLA</span><span class="ps-v good">0</span></div></div>
+        </div>
+        <div style="margin-top:16px;background:var(--yellow-bg);border:1px solid #FDE68A;border-radius:6px;padding:12px 14px">
+          <div style="font-size:12px;font-weight:600;color:var(--yellow-text);margin-bottom:4px">&#9888; Fastest-Rising Cost in Portfolio: +22% MoM</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.5">Cloud compute and egress costs driving +22% MoM growth. Data Stores repatriation workstream underway and expected to bend the curve in Q3 2026. Also: merge backlog elevation on 2 large tables is a leading indicator for query degradation &mdash; resolve before it becomes a reliability issue.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Temporal -->
+    <div class="svc-page svc-detail" id="svc-tmp">
+      <div class="svc-ph" style="background:#3B0764"><div><div class="svc-pt">Temporal</div><div class="svc-pm">Workflow Orchestration &middot; Lead: Kai Liu</div></div><div style="display:flex;gap:10px;align-items:center"><span class="sb-badge mock">MOCK</span><span style="font-size:12px;color:#94A3B8">Overall: <span style="color:#F59E0B;font-weight:600">Yellow</span></span></div></div>
+      <div class="svc-pb">
+        <div class="pillar-grid">
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Reliability</div><div class="ps"><span class="ps-l">E2E success (30d)</span><span class="ps-v good">99.998%</span></div><div class="ps"><span class="ps-l">P0+P1 (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">Last incident</span><span class="ps-v good">Oct 2025</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Performance</div><div class="ps"><span class="ps-l">Workflow start p50</span><span class="ps-v good">8ms</span></div><div class="ps"><span class="ps-l">Task dispatch p99</span><span class="ps-v good">42ms</span></div><div class="ps"><span class="ps-l">Workflow backlog</span><span class="ps-v good">Normal</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Capacity &amp; Utilization</div><div class="ps"><span class="ps-l">Active workflows</span><span class="ps-v">~140K</span></div><div class="ps"><span class="ps-l">DB row count</span><span class="ps-v">12B rows</span></div><div class="ps"><span class="ps-l">Time-to-exhaustion</span><span class="ps-v good">&gt;180d</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Cost &amp; Efficiency</div><div class="ps"><span class="ps-l">Total $/month</span><span class="ps-v warn">$20K</span></div><div class="ps"><span class="ps-l">MoM trend</span><span class="ps-v bad">+31% (fastest % growth)</span></div><div class="ps"><span class="ps-l">Primary driver</span><span class="ps-v warn">Cloud DB + compute</span></div><div class="ps"><span class="ps-l">Repatriation</span><span class="ps-v warn">Assessed, not started</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Demand &amp; Toil</div><div class="ps"><span class="ps-l">Support posts (30d)</span><span class="ps-v good">3</span></div><div class="ps"><span class="ps-l">Oncall pages (30d)</span><span class="ps-v good">0</span></div><div class="ps"><span class="ps-l">Trend</span><span class="ps-v good">Very low</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Security</div><div class="ps"><span class="ps-l">Patching SLO</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Secrets rotation</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Encryption at rest</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">High/crit vulns &gt;SLA</span><span class="ps-v good">0</span></div></div>
+        </div>
+        <div style="margin-top:16px;background:var(--yellow-bg);border:1px solid #FDE68A;border-radius:6px;padding:12px 14px">
+          <div style="font-size:12px;font-weight:600;color:var(--yellow-text);margin-bottom:4px">&#9888; +31% MoM Cost Growth &mdash; Repatriation Not Yet Started</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.5">Temporal has the highest percentage MoM cost growth in the portfolio (+31%), though absolute dollars are small ($20K/mo). Cloud DB and compute costs are the driver. Repatriation has been assessed but not started &mdash; should be queued behind ClickHouse in the repatriation roadmap.</div>
+        </div>
+      </div>
+    </div>
+
+
     <div class="sb-deep" style="margin-top:20px">
       <div class="sb-section-title"><span class="sb-section-letter">F</span> Automated Optimization Signals <span class="sb-badge mock">MOCK</span></div>
       <div class="sb-section-desc">Ranked by expected $ impact on $3/khr glide path.</div>
@@ -369,6 +591,8 @@
 <script>
 var dbR=false;
 function sw(tab){document.querySelectorAll('.sb-tab').forEach(function(e){e.classList.remove('active')});document.querySelector('.sb-tab[data-tab="'+tab+'"]').classList.add('active');document.getElementById('t-ph').style.display=tab==='ph'?'block':'none';document.getElementById('t-ops').style.display=tab==='ops'?'block':'none';if(tab==='ops'&&!dbR){dbR=true;var c=document.getElementById('ch-dbplat');if(c)drawDB(c);}}
+function kpiX(id){var el=document.getElementById(id);var isOpen=el.classList.contains('open');el.classList.toggle('open');var n=id.replace('kx','');var btn=document.getElementById('kxt'+n);if(btn)btn.textContent=isOpen?'Expand ▼':'Collapse ▲';}
+function showSvc(svc){document.querySelectorAll('.svc-detail').forEach(function(e){e.classList.remove('active')});document.querySelectorAll('.svc-btn').forEach(function(e){e.classList.remove('active')});var el=document.getElementById('svc-'+svc);if(el)el.classList.add('active');var btn=document.querySelector('.svc-btn[data-svc="'+svc+'"]');if(btn)btn.classList.add('active');}
 function tt(){document.getElementById('gtt').classList.toggle('show');}
 document.addEventListener('click',function(e){if(!e.target.closest('#growth-card'))document.getElementById('gtt').classList.remove('show');});
 var C={act:'#2563EB',tgt:'#94A3B8',fct:'#F59E0B',red:'#EF4444',yel:'#F59E0B',grn:'#10B981',mut:'#94A3B8',grd:'#E2E8F0'};
