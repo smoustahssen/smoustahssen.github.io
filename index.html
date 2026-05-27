@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Storage Scorecard — Roblox Infra Storage</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,-apple-system,sans-serif;background:#F1F5F9;padding:16px}
+    :root{--bg:#F8FAFC;--bg-card:#FFF;--header:#0F172A;--border:#E2E8F0;--text:#0F172A;--muted:#64748B;--muted-2:#94A3B8;--green:#10B981;--green-bg:#ECFDF5;--green-text:#047857;--yellow:#F59E0B;--yellow-bg:#FFFBEB;--yellow-text:#B45309;--red:#EF4444;--red-bg:#FEF2F2;--red-text:#B91C1C;--blue:#3B82F6;--blue-bg:#EFF6FF;--blue-text:#1D4ED8;--mock-bg:#FEF3C7;--mock-text:#92400E;--src-bg:#E2E8F0;--src-text:#475569;--chart-actual:#2563EB;--chart-target:#94A3B8;--chart-forecast:#F59E0B}
+    .sb-root{font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text);background:var(--bg);border-radius:12px;overflow:hidden;max-width:1280px;margin:0 auto;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+    .sb-header{background:var(--header);color:#fff;padding:16px 24px}
+    .sb-header-row{display:flex;align-items:center;justify-content:space-between}
+    .sb-logo{display:flex;align-items:center;gap:12px}
+    .sb-logo-r{width:32px;height:32px;border-radius:6px;background:#DC2626;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+    .sb-title{font-size:16px;font-weight:600}
+    .sb-subtitle{font-size:12px;color:#94A3B8;margin-top:2px}
+    .sb-pill{display:inline-block;padding:4px 10px;background:#1E293B;color:#93C5FD;border-radius:4px;font-size:11px;font-weight:500;letter-spacing:.3px}
+    .sb-updated{font-size:11px;color:#94A3B8;margin-left:12px}
+    .sb-header-metrics{display:flex;gap:28px;margin-top:14px;font-size:13px;align-items:center;flex-wrap:wrap}
+    .sb-hm-item{display:flex;align-items:center;gap:8px}
+    .sb-hm-label{color:#94A3B8}
+    .sb-hm-value{font-weight:600;color:#fff}
+    .sb-hm-value.warn{color:#FBBF24}
+    .sb-tabs{display:flex;border-bottom:1px solid var(--border);background:#fff;padding:0 24px}
+    .sb-tab{padding:14px 4px;margin-right:28px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;user-select:none}
+    .sb-tab.active{color:#1D4ED8;border-bottom-color:#1D4ED8}
+    .sb-body{padding:24px}
+    .sb-section-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+    .sb-section-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+    .sb-section-letter{background:var(--header);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px}
+    .sb-section-desc{font-size:13px;color:var(--muted);margin-bottom:16px}
+    .sb-kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+    .sb-kpi-card{background:var(--bg-card);border:1px solid var(--border);border-top:3px solid var(--muted-2);border-radius:8px;padding:14px 16px;position:relative}
+    .sb-kpi-card.green{border-top-color:var(--green)}
+    .sb-kpi-card.yellow{border-top-color:var(--yellow)}
+    .sb-kpi-card.red{border-top-color:var(--red)}
+    .sb-kpi-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:6px}
+    .sb-kpi-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.4px;text-transform:uppercase;flex:1}
+    .sb-badge{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:3px;letter-spacing:.3px}
+    .sb-badge.src{background:var(--src-bg);color:var(--src-text)}
+    .sb-badge.mock{background:var(--mock-bg);color:var(--mock-text)}
+    .sb-kpi-value-row{display:flex;align-items:baseline;gap:6px;margin-bottom:4px;flex-wrap:wrap}
+    .sb-kpi-value{font-size:20px;font-weight:600;line-height:1}
+    .sb-kpi-value.warn{color:var(--yellow-text)}
+    .sb-kpi-value.bad{color:var(--red-text)}
+    .sb-kpi-value.good{color:var(--green-text)}
+    .sb-kpi-delta{font-size:11px;font-weight:500}
+    .sb-kpi-delta.up-bad{color:var(--red)}
+    .sb-kpi-delta.up-good{color:var(--green-text)}
+    .sb-kpi-delta.down-good{color:var(--green-text)}
+    .sb-kpi-delta.flat{color:var(--muted)}
+    .sb-kpi-context{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.35;min-height:26px}
+    .sb-kpi-chart{margin-top:6px}
+    .sb-chart-legend{display:flex;gap:10px;font-size:9px;color:var(--muted);margin-top:4px;flex-wrap:wrap}
+    .sb-chart-legend-item{display:flex;align-items:center;gap:3px}
+    .sb-legend-line{display:inline-block;width:14px;height:0;border-top:2px solid}
+    .sb-legend-line.actual{border-color:var(--chart-actual)}
+    .sb-legend-line.target{border-color:var(--chart-target);border-top-style:dashed}
+    .sb-legend-line.forecast{border-color:var(--chart-forecast);border-top-style:dashed}
+    .sb-info-icon{font-size:11px;color:var(--muted-2);cursor:help;border:1px solid var(--muted-2);width:13px;height:13px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:600}
+    .sb-info-tooltip{position:absolute;top:100%;right:12px;background:var(--header);color:#fff;padding:8px 10px;border-radius:6px;font-size:11px;line-height:1.45;max-width:240px;z-index:10;display:none;font-weight:400}
+    .sb-info-tooltip.show{display:block}
+    .sb-sec-split-mini{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .sb-sec-half-mini+.sb-sec-half-mini{border-left:1px solid var(--border);padding-left:12px}
+    .sb-sec-half-lbl{font-size:9px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+    .sb-sec-half-val{font-size:17px;font-weight:600;line-height:1}
+    .sb-sec-half-val.bad{color:var(--red-text)}
+    .sb-sec-half-val.warn{color:var(--yellow-text)}
+    .sb-deep{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px 22px;margin-top:22px}
+    .sb-svc-toggles{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+    .sb-svc-toggle{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid var(--border);border-radius:12px;font-size:11px;cursor:pointer;background:#fff;transition:opacity .15s;user-select:none}
+    .sb-svc-toggle.off{opacity:.35}
+    .sb-svc-toggle .swatch{width:9px;height:9px;border-radius:50%}
+    .sb-bar-row{display:grid;grid-template-columns:100px 1fr 110px;align-items:center;gap:12px;font-size:12px;padding:4px 0}
+    .sb-bar-track{background:#F1F5F9;height:10px;border-radius:3px}
+    .sb-bar-fill{background:var(--muted-2);height:100%;border-radius:3px}
+    .sb-bar-fill.movers{background:var(--blue)}
+    .sb-bar-row .val{text-align:right;font-variant-numeric:tabular-nums}
+    .sb-bar-row .delta{font-weight:500;margin-left:6px;font-size:11px}
+    .movers-tag{color:var(--blue-text);font-size:11px;font-weight:500;margin-right:6px}
+    .sb-trend.up-bad{color:var(--red)}
+    .sb-trend.up-good{color:var(--green-text)}
+    .sb-trend.down-good{color:var(--green-text)}
+    .sb-trend.flat{color:var(--muted)}
+    .sb-incident-card{padding:10px 12px;border-radius:6px;margin-bottom:8px;font-size:12px}
+    .sb-incident-card.p0{background:var(--red-bg);border-left:3px solid var(--red)}
+    .sb-incident-card.p1{background:var(--yellow-bg);border-left:3px solid var(--yellow)}
+    .sb-incident-sev{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;margin-right:8px}
+    .sb-incident-sev.p0{background:var(--red);color:#fff}
+    .sb-incident-sev.p1{background:var(--yellow);color:#fff}
+    .sb-incident-meta{color:var(--muted);font-size:11px}
+    .sb-incident-desc{margin-top:4px;color:var(--text)}
+    .sb-sec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .sb-sec-card{background:var(--bg-card);border:1px solid var(--border);border-left:4px solid var(--muted-2);padding:12px 14px;border-radius:6px}
+    .sb-sec-card.red{border-left-color:var(--red)}
+    .sb-sec-card.yellow{border-left-color:var(--yellow)}
+    .sb-sec-card.green{border-left-color:var(--green)}
+    .sb-sec-label{font-size:10px;color:var(--muted);letter-spacing:.4px;text-transform:uppercase;font-weight:600;margin-bottom:6px}
+    .sb-sec-val{font-size:22px;font-weight:600}
+    .sb-sec-target{font-size:11px;color:var(--muted);margin-top:2px}
+    .sb-sec-status{font-size:11px;margin-top:4px;font-weight:500}
+    .sb-sec-status.red{color:var(--red)}
+    .sb-sec-status.yellow{color:var(--yellow-text)}
+    .sb-sec-status.green{color:var(--green-text)}
+    /* ops */
+    .ops-matrix{display:grid;grid-template-columns:160px repeat(6,1fr);gap:1px;background:var(--border);border-radius:8px;overflow:hidden;font-size:11px}
+    .ops-mh{background:#F8FAFC;font-weight:600;font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;padding:8px 10px}
+    .ops-ms{background:#fff;padding:10px 12px;font-weight:600;font-size:12px}
+    .ops-mc{background:#fff;padding:8px 10px;text-align:center}
+    .dot{display:inline-block;width:12px;height:12px;border-radius:50%}
+    .dot.g{background:var(--green)}
+    .dot.y{background:var(--yellow)}
+    .dot.r{background:var(--red)}
+    .dot.x{background:var(--muted-2)}
+    .svc-page{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:16px}
+    .svc-ph{background:var(--header);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
+    .svc-pt{font-size:15px;font-weight:600}
+    .svc-pm{font-size:11px;color:#94A3B8}
+    .svc-pb{padding:18px}
+    .pillar-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .pc{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px}
+    .pc.r{border-top:3px solid var(--red)}
+    .pc.y{border-top:3px solid var(--yellow)}
+    .pc.g{border-top:3px solid var(--green)}
+    .pc-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .ps{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)}
+    .ps:last-child{border-bottom:none}
+    .ps-l{color:var(--muted)}
+    .ps-v{font-weight:600}
+    .ps-v.bad{color:var(--red-text)}
+    .ps-v.warn{color:var(--yellow-text)}
+    .ps-v.good{color:var(--green-text)}
+    .pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+    .pill{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600}
+    .pill.blue{background:var(--blue-bg);color:var(--blue-text)}
+    .pill.red{background:var(--red-bg);color:var(--red-text)}
+    .pill.yellow{background:var(--yellow-bg);color:var(--yellow-text)}
+    .pill.green{background:var(--green-bg);color:var(--green-text)}
+    .pill.gray{background:#F1F5F9;color:var(--muted)}
+    .ev{display:flex;align-items:flex-start;gap:10px;padding:6px 0;font-size:12px}
+    .em{flex-shrink:0;width:8px;height:8px;border-radius:50%;margin-top:3px}
+    .em.y{background:var(--yellow)}.em.r{background:var(--red)}.em.b{background:var(--blue)}.em.g{background:var(--green)}
+    .ed{color:var(--muted);font-size:11px;min-width:70px}
+    .rr{display:grid;grid-template-columns:24px 1fr 160px 70px;align-items:center;gap:10px;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)}
+    .rr:last-child{border-bottom:none}
+    .signal-row{padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;display:flex;align-items:flex-start;gap:10px}
+    .signal-row:last-child{border-bottom:none}
+    .si{font-size:14px;flex-shrink:0;margin-top:1px}
+    .st{font-weight:600;color:var(--text)}
+    .sd{color:var(--muted);margin-top:2px;line-height:1.4}
+    @media(max-width:768px){.sb-kpi-grid{grid-template-columns:1fr 1fr}.pillar-grid{grid-template-columns:1fr}.sb-sec-grid{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+<div class="sb-root">
+  <div class="sb-header">
+    <div class="sb-header-row">
+      <div class="sb-logo"><div class="sb-logo-r">R</div><div><div class="sb-title">Storage Scorecard</div><div class="sb-subtitle">Roblox Infra Storage &middot; 10 services</div></div></div>
+      <div style="text-align:right"><span class="sb-pill">M0 Mock &middot; May 2026</span><span class="sb-updated">Last updated: May 26, 2026 09:41 UTC</span></div>
+    </div>
+    <div class="sb-header-metrics">
+      <div class="sb-hm-item"><span class="sb-hm-label">Portfolio E2E</span><span class="sb-hm-value warn">99.967%</span></div>
+      <div class="sb-hm-item"><span class="sb-hm-label">Total $/mo</span><span class="sb-hm-value">$2.34M</span></div>
+      <div class="sb-hm-item"><span class="sb-hm-label">Portfolio QPS</span><span class="sb-hm-value">4.2M</span></div>
+      <div class="sb-hm-item"><span class="sb-hm-label">P0+P1 (30d)</span><span class="sb-hm-value warn">5</span></div>
+      <div class="sb-hm-item"><span class="sb-hm-label">Support msgs (5.5mo)</span><span class="sb-hm-value">~950</span></div>
+    </div>
+  </div>
+  <div class="sb-tabs">
+    <div class="sb-tab active" data-tab="ph" onclick="sw('ph')">Portfolio Health</div>
+    <div class="sb-tab" data-tab="ops" onclick="sw('ops')">Ops Deep-Dive</div>
+  </div>
+
+  <!-- PORTFOLIO HEALTH -->
+  <div class="sb-body" id="t-ph">
+    <div class="sb-section-label">Key indicators &mdash; trailing 12mo + forecast</div>
+    <div class="sb-kpi-grid">
+      <div class="sb-kpi-card yellow">
+        <div class="sb-kpi-head"><span class="sb-kpi-label">E2E Availability</span><span class="sb-badge src">GRAFANA</span></div>
+        <div class="sb-kpi-value-row"><span class="sb-kpi-value warn">99.967%</span><span class="sb-kpi-delta up-bad">&#8595; &minus;0.022pp</span></div>
+        <div class="sb-kpi-context">Target &ge;99.99%. RaaS hot-key P0 is primary drag.</div>
+        <div class="sb-kpi-chart"><canvas id="ch-avail" width="200" height="70"></canvas></div>
+        <div class="sb-chart-legend"><span class="sb-chart-legend-item"><span class="sb-legend-line actual"></span>Actual</span><span class="sb-chart-legend-item"><span class="sb-legend-line target"></span>Target</span></div>
+      </div>
+      <div class="sb-kpi-card yellow">
+        <div class="sb-kpi-head"><span class="sb-kpi-label">P0+P1 Incidents</span><span class="sb-badge src">PAGERDUTY</span></div>
+        <div class="sb-kpi-value-row"><span class="sb-kpi-value warn">5</span><span class="sb-kpi-delta down-good">&#8595; &minus;3 vs prior 30d</span></div>
+        <div class="sb-kpi-context">MTTA 8.3m &middot; MTTR 47m &middot; both within target.</div>
+        <div class="sb-kpi-chart"><canvas id="ch-inc-mini" width="200" height="70"></canvas></div>
+        <div class="sb-chart-legend"><span class="sb-chart-legend-item"><span style="display:inline-block;width:10px;height:10px;background:#EF4444"></span>P0</span><span class="sb-chart-legend-item"><span style="display:inline-block;width:10px;height:10px;background:#F59E0B"></span>P1</span><span class="sb-chart-legend-item"><span class="sb-legend-line target"></span>Target &le;6</span></div>
+      </div>
+      <div class="sb-kpi-card red">
+        <div class="sb-kpi-head"><span class="sb-kpi-label">Security Posture</span><span class="sb-badge mock">MOCK</span></div>
+        <div class="sb-sec-split-mini">
+          <div class="sb-sec-half-mini"><div class="sb-sec-half-lbl">Patching</div><div class="sb-kpi-value-row"><span class="sb-sec-half-val bad">82%</span><span class="sb-kpi-delta up-good">+3pp</span></div><canvas id="ch-patch" width="95" height="40"></canvas></div>
+          <div class="sb-sec-half-mini"><div class="sb-sec-half-lbl">Secrets</div><div class="sb-kpi-value-row"><span class="sb-sec-half-val warn">87%</span><span class="sb-kpi-delta flat">flat</span></div><canvas id="ch-secrets" width="95" height="40"></canvas></div>
+        </div>
+        <div class="sb-kpi-context" style="margin-top:6px">Target 100%. 7 clusters overdue &middot; 3 services pending.</div>
+        <div class="sb-chart-legend"><span class="sb-chart-legend-item"><span class="sb-legend-line actual"></span>Actual</span><span class="sb-chart-legend-item"><span class="sb-legend-line target"></span>Target</span></div>
+      </div>
+      <div class="sb-kpi-card yellow">
+        <div class="sb-kpi-head"><span class="sb-kpi-label">Budget vs Actual</span><span class="sb-badge src">FINANCE</span></div>
+        <div class="sb-kpi-value-row"><span class="sb-kpi-value warn">$2.34M</span><span class="sb-kpi-delta up-bad">+4.0% over</span></div>
+        <div class="sb-kpi-context">CRDB licensing renewal (one-time). Net of this, flat.</div>
+        <div class="sb-kpi-chart"><canvas id="ch-budget-mini" width="200" height="70"></canvas></div>
+        <div class="sb-chart-legend"><span class="sb-chart-legend-item"><span class="sb-legend-line actual"></span>Actual</span><span class="sb-chart-legend-item"><span class="sb-legend-line target"></span>Budget</span><span class="sb-chart-legend-item"><span class="sb-legend-line forecast"></span>Forecast</span></div>
+      </div>
+      <div class="sb-kpi-card yellow" id="growth-card">
+        <div class="sb-kpi-head"><span class="sb-kpi-label">Consumption vs Engagement DAU</span><span class="sb-info-icon" onclick="tt()">i</span><span class="sb-badge mock">MOCK</span></div>
+        <div class="sb-info-tooltip" id="gtt">Each service MoM consumption growth weighted by spend share, divided by Roblox engagement-hour MoM growth. &gt;1.0&times; = Storage growing faster than business.</div>
+        <div class="sb-kpi-value-row"><span class="sb-kpi-value warn">1.4&times;</span><span class="sb-kpi-delta up-bad">&#8593; +0.1&times; MoM</span></div>
+        <div class="sb-kpi-context">Storage outpacing business. ClickHouse + EaaS primary drivers.</div>
+        <div class="sb-kpi-chart"><canvas id="ch-growth-mini" width="200" height="70"></canvas></div>
+        <div class="sb-chart-legend"><span class="sb-chart-legend-item"><span class="sb-legend-line actual"></span>Ratio</span><span class="sb-chart-legend-item"><span class="sb-legend-line target"></span>Parity 1.0&times;</span></div>
+      </div>
+    </div>
+
+    <div class="sb-deep">
+      <div class="sb-section-title"><span class="sb-section-letter">A</span> Adoption &amp; Consumption <span class="sb-badge mock">MOCK</span></div>
+      <div class="sb-section-desc">% change since Jun 2025. Click to toggle.</div>
+      <canvas id="ch-adopt" width="900" height="320"></canvas>
+      <div class="sb-svc-toggles" id="adopt-t"></div>
+    </div>
+
+    <div class="sb-deep">
+      <div class="sb-section-title"><span class="sb-section-letter">B</span> Budget vs Actual <span class="sb-badge src">FINANCE</span></div>
+      <div class="sb-section-desc">12-month actuals + budget + forecast.</div>
+      <div style="background:var(--bg);padding:14px;border-radius:6px;margin-bottom:16px">
+        <canvas id="ch-budget-big" width="900" height="220"></canvas>
+        <div class="sb-chart-legend" style="margin-top:8px"><span class="sb-chart-legend-item"><span class="sb-legend-line actual"></span>Actual</span><span class="sb-chart-legend-item"><span class="sb-legend-line target"></span>Budget</span><span class="sb-chart-legend-item"><span class="sb-legend-line forecast"></span>Forecast</span></div>
+      </div>
+      <div class="sb-section-label">Spend by service &mdash; May 2026</div>
+      <div class="sb-bar-row"><div class="lbl">EaaS/CRDB</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:100%"></div></div><div class="val">$890K <span class="delta sb-trend up-bad">+5%</span></div></div>
+      <div class="sb-bar-row"><div class="lbl">MS SQL</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:38%"></div></div><div class="val">$340K <span class="delta sb-trend flat">+1%</span></div></div>
+      <div class="sb-bar-row"><div class="lbl">RaaS</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:31%"></div></div><div class="val">$280K <span class="delta sb-trend down-good">&minus;3%</span></div></div>
+      <div class="sb-bar-row"><div class="lbl">R3 (Ceph)</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:27%"></div></div><div class="val">$240K <span class="delta sb-trend flat">flat</span></div></div>
+      <div class="sb-bar-row"><div class="lbl">QaaS</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:21%"></div></div><div class="val">$190K <span class="delta sb-trend up-bad">+8%</span></div></div>
+      <div class="sb-bar-row"><div class="lbl">ClickHouse <span class="movers-tag">Movers</span></div><div class="sb-bar-track"><div class="sb-bar-fill movers" style="width:16%"></div></div><div class="val">$140K <span class="delta sb-trend up-bad">+22%</span></div></div>
+      <div class="sb-bar-row"><div class="lbl">Elasticsearch</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:15%"></div></div><div class="val">$130K <span class="delta sb-trend flat">+2%</span></div></div>
+      <div class="sb-bar-row"><div class="lbl">RDB-KV</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:9%"></div></div><div class="val">$80K <span class="delta sb-trend flat">flat</span></div></div>
+      <div class="sb-bar-row"><div class="lbl">RDB-PG</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:3%"></div></div><div class="val">$30K <span class="delta sb-trend flat">flat</span></div></div>
+      <div class="sb-bar-row"><div class="lbl">Temporal</div><div class="sb-bar-track"><div class="sb-bar-fill" style="width:2%"></div></div><div class="val">$20K <span class="delta sb-trend up-bad">+31%</span></div></div>
+      <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:10px;display:flex;justify-content:space-between;font-size:13px"><span style="font-weight:600">Total</span><span><b>$2.34M</b> <span class="sb-trend up-bad" style="margin-left:6px">+4% vs $2.25M budget</span></span></div>
+    </div>
+
+    <div class="sb-deep">
+      <div class="sb-section-title"><span class="sb-section-letter">C</span> Effective Unit Price per Product <span class="sb-badge mock">MOCK</span></div>
+      <div class="sb-section-desc">% change since Jun 2025. Click to toggle.</div>
+      <canvas id="ch-unitp" width="900" height="320"></canvas>
+      <div class="sb-svc-toggles" id="unitp-t"></div>
+    </div>
+
+    <div class="sb-deep">
+      <div class="sb-section-title"><span class="sb-section-letter">D</span> Operational Incidents <span class="sb-badge src">PAGERDUTY</span></div>
+      <div class="sb-section-desc">P0+P1 per month, stacked by service.</div>
+      <canvas id="ch-inc-big" width="900" height="300"></canvas>
+      <div class="sb-svc-toggles" id="inc-t"></div>
+      <div style="margin-top:22px">
+        <div class="sb-section-label">Top incidents &mdash; May 2026</div>
+        <div class="sb-incident-card p0"><span class="sb-incident-sev p0">P0</span><span class="sb-incident-meta">May 14 &middot; RaaS &middot; 1h 22m</span><div class="sb-incident-desc">Hot-key on floodchecker-farms drove cluster-wide latency</div></div>
+        <div class="sb-incident-card p1"><span class="sb-incident-sev p1">P1</span><span class="sb-incident-meta">May 8 &middot; EaaS &middot; 38m</span><div class="sb-incident-desc">CRDB error rate spike on eaas-7, customer-impacting reads</div></div>
+        <div class="sb-incident-card p1"><span class="sb-incident-sev p1">P1</span><span class="sb-incident-meta">May 22 &middot; QaaS &middot; 52m</span><div class="sb-incident-desc">URP excursion on transcoding-events topic</div></div>
+      </div>
+    </div>
+
+    <div class="sb-deep">
+      <div class="sb-section-title"><span class="sb-section-letter">E</span> Security &amp; Compliance <span class="sb-badge mock">MOCK</span></div>
+      <div class="sb-section-desc">12-month trends. Target = 100%.</div>
+      <div class="sb-sec-grid">
+        <div class="sb-sec-card red"><div class="sb-sec-label">Fleet patched (30d)</div><div class="sb-sec-val">82%</div><div class="sb-sec-target">target: 100%</div><canvas data-bs="sec-patch" width="220" height="80" style="margin-top:8px"></canvas><div class="sb-sec-status red">7 clusters overdue</div></div>
+        <div class="sb-sec-card yellow"><div class="sb-sec-label">Secrets rotation</div><div class="sb-sec-val">87%</div><div class="sb-sec-target">target: 100%</div><canvas data-bs="sec-secrets" width="220" height="80" style="margin-top:8px"></canvas><div class="sb-sec-status yellow">3 services pending</div></div>
+        <div class="sb-sec-card yellow"><div class="sb-sec-label">Encryption at rest</div><div class="sb-sec-val">95%</div><div class="sb-sec-target">target: 100%</div><canvas data-bs="sec-enc" width="220" height="80" style="margin-top:8px"></canvas><div class="sb-sec-status yellow">ClickHouse cluster gap</div></div>
+        <div class="sb-sec-card green"><div class="sb-sec-label">Vuln findings (&gt;SLA)</div><div class="sb-sec-val">0</div><div class="sb-sec-target">target: 0</div><canvas data-bs="sec-vuln" width="220" height="80" style="margin-top:8px"></canvas><div class="sb-sec-status green">Clean</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPS DEEP-DIVE -->
+  <div class="sb-body" id="t-ops" style="display:none">
+    <div class="sb-section-label">Portfolio six-pillar matrix &mdash; trailing 30d</div>
+    <div class="ops-matrix">
+      <div class="ops-mh">Service</div><div class="ops-mh">Reliability</div><div class="ops-mh">Performance</div><div class="ops-mh">Capacity</div><div class="ops-mh">Cost</div><div class="ops-mh">Demand &amp; Toil</div><div class="ops-mh">Security</div>
+      <div class="ops-ms">EaaS / CRDB</div><div class="ops-mc"><span class="dot y" title="SLO at risk: p99 spikes on eaas-7, eaas-47"></span></div><div class="ops-mc"><span class="dot y" title="Hot-row on viral sales; cache hit 97%"></span></div><div class="ops-mc"><span class="dot g" title="1,060+ dormant STx groups flagged"></span></div><div class="ops-mc"><span class="dot y" title="CRDB licensing most-watched. +5% MoM."></span></div><div class="ops-mc"><span class="dot r" title="PR review bottleneck: ~45% of #dbplat-access traffic. 280 entity PRs in 5.5mo."></span></div><div class="ops-mc"><span class="dot y" title="ACP key migration: 50 PRs accelerating (Falcon deprecation)"></span></div>
+      <div class="ops-ms">RaaS</div><div class="ops-mc"><span class="dot r" title="P0 May 14: hot-key SLO breach"></span></div><div class="ops-mc"><span class="dot y" title="Memory fragmentation elevated"></span></div><div class="ops-mc"><span class="dot g" title="4 clusters over-provisioned: reclamation identified"></span></div><div class="ops-mc"><span class="dot g" title="$/GB-RAM trending down"></span></div><div class="ops-mc"><span class="dot g" title="18/19 support posts AI-resolved wk 04/12"></span></div><div class="ops-mc"><span class="dot y" title="Patching: 2 clusters overdue"></span></div>
+      <div class="ops-ms">QaaS</div><div class="ops-mc"><span class="dot y" title="URP excursion May 22"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot y" title="$/GB transferred +8% MoM"></span></div><div class="ops-mc"><span class="dot y" title="CDC access (DBDATAQUEUE Jira): ~40 tickets in 5.5mo"></span></div><div class="ops-mc"><span class="dot g"></span></div>
+      <div class="ops-ms">R3 (Ceph)</div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot y" title="OSD utilization variance; scrub backlog"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div>
+      <div class="ops-ms">RDB-KV</div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot y" title="Multi-cell readiness gate Q3 2026"></span></div><div class="ops-mc"><span class="dot y" title="Multi-cell hard gate Q3 2026"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div>
+      <div class="ops-ms">RDB-PG</div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot x" title="Q2 deprioritized"></span></div><div class="ops-mc"><span class="dot g"></span></div>
+      <div class="ops-ms">MS SQL</div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot y" title="HW lifecycle: $5M 2026 + $17M 2027"></span></div><div class="ops-mc"><span class="dot r" title="Licensing $340K/mo — declining target tied to OSS migration"></span></div><div class="ops-mc"><span class="dot y" title="MSSQL migration pipeline: 1B–4B row backfills ongoing"></span></div><div class="ops-mc"><span class="dot g"></span></div>
+      <div class="ops-ms">Elasticsearch</div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot y" title="JVM heap pressure on 2 clusters"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div>
+      <div class="ops-ms">ClickHouse</div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot y" title="Merge backlog elevated: leading latency indicator"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot y" title="Cloud spend +22% MoM. Repatriation in progress."></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot y" title="Encryption at rest gap on ClickHouse cluster"></span></div>
+      <div class="ops-ms">Temporal</div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot y" title="Cloud spend +31% MoM. Repatriation assessed."></span></div><div class="ops-mc"><span class="dot g"></span></div><div class="ops-mc"><span class="dot g"></span></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;display:flex;gap:14px;flex-wrap:wrap">
+      <span>Hover cells for detail.</span>
+      <span><span class="dot r" style="display:inline-block;margin-right:4px"></span>SLO breach / P0+P1 / &lt;90d headroom</span>
+      <span><span class="dot y" style="display:inline-block;margin-right:4px"></span>At-risk, no breach</span>
+      <span><span class="dot g" style="display:inline-block;margin-right:4px"></span>Within target</span>
+      <span><span class="dot x" style="display:inline-block;margin-right:4px"></span>Deprioritized</span>
+    </div>
+
+    <div style="margin-top:28px"><div class="sb-section-label">EaaS / CRDB &mdash; Service Deep-Dive</div><div style="font-size:11px;color:var(--muted);margin-bottom:10px">Leads: Kai Liu &middot; Gopal Anand &middot; On-prem + 1 cloud (OH)</div></div>
+    <div class="svc-page">
+      <div class="svc-ph"><div><div class="svc-pt">EaaS / CRDB</div><div class="svc-pm">Entities-as-a-Service &middot; Support channel: #dbplat-access</div></div><div style="display:flex;gap:10px;align-items:center"><span class="sb-badge mock">MOCK</span><span style="font-size:12px;color:#94A3B8">Overall: <span style="color:#F59E0B;font-weight:600">Yellow</span></span></div></div>
+      <div class="svc-pb">
+        <div class="pillar-grid">
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Reliability</div><div class="ps"><span class="ps-l">E2E success (30d)</span><span class="ps-v warn">99.971%</span></div><div class="ps"><span class="ps-l">Target</span><span class="ps-v">&ge;99.99%</span></div><div class="ps"><span class="ps-l">P0+P1 (30d)</span><span class="ps-v warn">2</span></div><div class="ps"><span class="ps-l">MTTA</span><span class="ps-v good">9.1m</span></div><div class="ps"><span class="ps-l">MTTR</span><span class="ps-v good">38m</span></div><div class="ps"><span class="ps-l">Recurring hot clusters</span><span class="ps-v warn" style="font-size:10px">eaas-3, eaas-7, eaas-12, eaas-47, eaas-68</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Performance</div><div class="ps"><span class="ps-l">Read p50</span><span class="ps-v good">1.2ms</span></div><div class="ps"><span class="ps-l">Read p99</span><span class="ps-v warn">18.4ms</span></div><div class="ps"><span class="ps-l">Write p99</span><span class="ps-v good">11.2ms</span></div><div class="ps"><span class="ps-l">Portfolio QPS</span><span class="ps-v">3.24M ops/s</span></div><div class="ps"><span class="ps-l">Cache hit rate</span><span class="ps-v good">97.3%</span></div><div class="ps"><span class="ps-l">Top callers</span><span class="ps-v" style="font-size:10px">cloud-transcoding 3.24M &middot; content-localization 2.22M</span></div></div>
+          <div class="pc g"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>Capacity &amp; Utilization</div><div class="ps"><span class="ps-l">Total storage</span><span class="ps-v">42 TB</span></div><div class="ps"><span class="ps-l">CPU utilization</span><span class="ps-v good">61%</span></div><div class="ps"><span class="ps-l">Time-to-exhaustion</span><span class="ps-v good">&gt;180d</span></div><div class="ps"><span class="ps-l">Active entity groups</span><span class="ps-v">~2,100</span></div><div class="ps"><span class="ps-l">Dormant STx groups</span><span class="ps-v warn">1,060+</span></div><div class="ps"><span class="ps-l">MoM consumption</span><span class="ps-v warn">+8%</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Cost &amp; Efficiency</div><div class="ps"><span class="ps-l">Total $/month</span><span class="ps-v warn">$890K</span></div><div class="ps"><span class="ps-l">MoM trend</span><span class="ps-v warn">+5%</span></div><div class="ps"><span class="ps-l">$/M ops</span><span class="ps-v">$0.27</span></div><div class="ps"><span class="ps-l">CRDB licensing</span><span class="ps-v warn">Most-watched cost line</span></div><div class="ps"><span class="ps-l">EaaS-off-CRDB</span><span class="ps-v good">In progress</span></div><div class="ps"><span class="ps-l">Top driver</span><span class="ps-v" style="font-size:10px">Frost feature stores dominate writes</span></div></div>
+          <div class="pc y"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Security</div><div class="ps"><span class="ps-l">Patching SLO</span><span class="ps-v warn">86%</span></div><div class="ps"><span class="ps-l">Secrets rotation</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Encryption at rest</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">Encryption in transit</span><span class="ps-v good">100%</span></div><div class="ps"><span class="ps-l">ACP key migration</span><span class="ps-v warn">50 PRs &middot; accelerating</span></div><div class="ps"><span class="ps-l">High/crit vulns &gt;SLA</span><span class="ps-v good">0</span></div></div>
+          <div class="pc r"><div class="pc-title"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block"></span>Demand &amp; Toil <span class="sb-badge src" style="margin-left:4px">SLACK #dbplat-access</span></div><div class="ps"><span class="ps-l">Channel msgs (Dec 25&ndash;May 26)</span><span class="ps-v bad">~950</span></div><div class="ps"><span class="ps-l">Unique requesters</span><span class="ps-v">120&ndash;140</span></div><div class="ps"><span class="ps-l">PR review share of traffic</span><span class="ps-v bad">~45%</span></div><div class="ps"><span class="ps-l">Oncall pages (30d)</span><span class="ps-v warn">2</span></div><div class="ps"><span class="ps-l">AI-resolution rate</span><span class="ps-v good">~65%</span></div><div class="ps"><span class="ps-l">Signal</span><span class="ps-v bad">&#8593; Bottleneck: PR queue</span></div></div>
+        </div>
+
+        <!-- #dbplat-access deep dive -->
+        <div style="margin-top:20px;background:#F8FAFC;border:1px solid var(--border);border-radius:6px;padding:16px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px">#dbplat-access Channel Analytics <span class="sb-badge src">DEC 2025 &ndash; MAY 2026</span><span style="font-size:11px;color:var(--muted)">~950 msgs &middot; 120&ndash;140 requesters</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Request Type Breakdown</div>
+              <canvas id="ch-dbplat" width="380" height="200"></canvas>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Top Requesters</div>
+              <div class="rr" style="font-size:10px;font-weight:700;color:var(--muted);border-bottom:2px solid var(--border)"><span>#</span><span>Name</span><span>Primary Focus</span><span style="text-align:right">Msgs</span></div>
+              <div class="rr"><span style="font-size:11px;font-weight:700;color:var(--muted-2)">1</span><span style="font-weight:500">Katherine Hao</span><span style="font-size:11px;color:var(--muted)">Arrakis backfills, schema evolution</span><span style="font-weight:600;text-align:right">~85</span></div>
+              <div class="rr"><span style="font-size:11px;font-weight:700;color:var(--muted-2)">2</span><span style="font-weight:500">Gia Min</span><span style="font-size:11px;color:var(--muted)">Entity group PRs, multi-team</span><span style="font-weight:600;text-align:right">~72</span></div>
+              <div class="rr"><span style="font-size:11px;font-weight:700;color:var(--muted-2)">3</span><span style="font-weight:500">Sindy Zhang</span><span style="font-size:11px;color:var(--muted)">Entity cleanup, CODEOWNERS, CI</span><span style="font-weight:600;text-align:right">~61</span></div>
+              <div class="rr"><span style="font-size:11px;font-weight:700;color:var(--muted-2)">4</span><span style="font-weight:500">Eve Lu</span><span style="font-size:11px;color:var(--muted)">virtual-currency-gateway, GUI/CLI</span><span style="font-weight:600;text-align:right">~48</span></div>
+              <div class="rr" style="border-bottom:none"><span style="font-size:11px;font-weight:700;color:var(--muted-2)">5</span><span style="font-weight:500">Daniel Lin</span><span style="font-size:11px;color:var(--muted)">assetsv2 schema design, deep-dives</span><span style="font-weight:600;text-align:right">~40</span></div>
+            </div>
+          </div>
+          <div style="margin-top:16px">
+            <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Key Trends &amp; Events</div>
+            <div class="ev"><div class="em b"></div><div class="ed">Dec 2025</div><div>ACP key migration accelerates due to Falcon deprecation. Volume doubles by May 2026.</div></div>
+            <div class="ev"><div class="em y"></div><div class="ed">Feb 2026</div><div>Stricter CI validation deployed — <strong>UnsupportedSchemaUpdateChange</strong> becomes top schema failure class.</div></div>
+            <div class="ev"><div class="em b"></div><div class="ed">Apr 9, 2026</div><div>Circuit breaker rollout — ~2 weeks of confused posts as callers adapted.</div></div>
+            <div class="ev"><div class="em r"></div><div class="ed">Late Apr 2026</div><div>VPN profile migration breaks EaaS GUI / eaas-cli auth for ~2 weeks. ~30 support posts from affected users.</div></div>
+            <div class="ev"><div class="em y"></div><div class="ed">Apr&ndash;May 2026</div><div>eaas-go v0.6.0 SDK release spikes design questions (~115 total). TTL config, bulk upsert, pagination top queries.</div></div>
+            <div class="ev"><div class="em g"></div><div class="ed">Ongoing</div><div>MSSQL-to-EaaS migrations: steady stream. 1B&ndash;4B row backfills from Arrakis, AssetHashes, phone-numbers, Transactions.</div></div>
+          </div>
+          <div style="margin-top:16px;background:var(--red-bg);border:1px solid #FECACA;border-radius:6px;padding:12px 14px">
+            <div style="font-size:12px;font-weight:600;color:var(--red-text);margin-bottom:6px">&#9888; Automation Opportunity: PR Review Bottleneck</div>
+            <div style="font-size:12px;color:var(--text);line-height:1.5">~45% of #dbplat-access traffic is PR review requests (entity creation, CODEOWNERS, schema field changes, ACP key changes). A PR review bot or auto-merge flow for standard entity-group creation PRs could eliminate a significant fraction.<span style="display:block;margin-top:6px;font-weight:500;color:var(--red-text)">Estimated impact: ~425 reviews / 5.5mo &rarr; automation target. High confidence, low effort.</span></div>
+            <div class="pill-row" style="margin-top:8px"><span class="pill blue">PR review bot</span><span class="pill yellow">Auto-merge standard entity PRs</span><span class="pill green">SDK self-serve docs</span><span class="pill red">CI unblock automation</span><span class="pill gray">CDC access self-serve</span></div>
+          </div>
+        </div>
+        <div style="margin-top:16px;background:var(--yellow-bg);border:1px solid #FDE68A;border-radius:6px;padding:12px 14px">
+          <div style="font-size:12px;font-weight:600;color:var(--yellow-text);margin-bottom:6px">&#9888; Structural Issue: Repeat-Incident CRDB Clusters</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.5"><strong>eaas-3, eaas-7, eaas-12, eaas-47, eaas-68</strong> appear repeatedly across incidents in the 5.5-month window. Connection pool exhaustion and p99 latency spikes are the recurring root causes. Each cluster needs a root-cause fix, not a repeat patch.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-deep" style="margin-top:20px">
+      <div class="sb-section-title"><span class="sb-section-letter">F</span> Automated Optimization Signals <span class="sb-badge mock">MOCK</span></div>
+      <div class="sb-section-desc">Ranked by expected $ impact on $3/khr glide path.</div>
+      <div class="signal-row"><div class="si">&#128308;</div><div><div class="st">MSSQL/Windows &rarr; OSS replacement (High confidence &middot; Low effort &middot; $$$)</div><div class="sd">$340K/mo license trend. HW refresh $5M (2026) + ~$17M (2027) — consolidate during refresh window.</div></div></div>
+      <div class="signal-row"><div class="si">&#128309;</div><div><div class="st">RaaS idle cluster reclamation (High confidence &middot; Low effort &middot; $$)</div><div class="sd">floodchecker 5.6&rarr;3TB &middot; eaas-au 15&rarr;7.5TB &middot; ads-insertion 7.9&rarr;6TB &middot; games-root-v2 7.2&rarr;2.4TB.</div></div></div>
+      <div class="signal-row"><div class="si">&#128309;</div><div><div class="st">EaaS PR review bottleneck — automation (High confidence &middot; Low effort &middot; toil saved)</div><div class="sd">~280 entity-creation + ~80 CODEOWNERS + ~50 ACP PRs in 5.5mo. Standard PRs are automatable via bot or auto-merge rules.</div></div></div>
+      <div class="signal-row"><div class="si">&#128309;</div><div><div class="st">ClickHouse cloud spend — repatriation (Medium confidence &middot; High effort &middot; $$$)</div><div class="sd">+22% MoM cloud spend. Data Stores repatriation workstream expected to bend the curve.</div></div></div>
+      <div class="signal-row"><div class="si">&#128309;</div><div><div class="st">EaaS dormant STx entity group cleanup (Medium confidence &middot; Multi-quarter &middot; $ + capacity)</div><div class="sd">1,060+ dormant groups. Multi-quarter cleanup scope.</div></div></div>
+      <div class="signal-row"><div class="si">&#128308;</div><div><div class="st">CRDB repeat-incident cluster structural fix (High priority &middot; Medium effort)</div><div class="sd">eaas-3, eaas-7, eaas-12, eaas-47, eaas-68 recurring. Connection pool exhaustion — structural fix needed, not patch cycles.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var dbR=false;
+function sw(tab){document.querySelectorAll('.sb-tab').forEach(function(e){e.classList.remove('active')});document.querySelector('.sb-tab[data-tab="'+tab+'"]').classList.add('active');document.getElementById('t-ph').style.display=tab==='ph'?'block':'none';document.getElementById('t-ops').style.display=tab==='ops'?'block':'none';if(tab==='ops'&&!dbR){dbR=true;var c=document.getElementById('ch-dbplat');if(c)drawDB(c);}}
+function tt(){document.getElementById('gtt').classList.toggle('show');}
+document.addEventListener('click',function(e){if(!e.target.closest('#growth-card'))document.getElementById('gtt').classList.remove('show');});
+var C={act:'#2563EB',tgt:'#94A3B8',fct:'#F59E0B',red:'#EF4444',yel:'#F59E0B',grn:'#10B981',mut:'#94A3B8',grd:'#E2E8F0'};
+var SC={'EaaS/CRDB':'#2563EB','RaaS':'#EF4444','QaaS':'#8B5CF6','R3':'#10B981','RDB-KV':'#F59E0B','RDB-PG':'#06B6D4','MS SQL':'#EC4899','Elasticsearch':'#14B8A6','ClickHouse':'#F97316','Temporal':'#84CC16'};
+function sc(cv){var dpr=window.devicePixelRatio||1,w=cv.width,h=cv.height;cv.width=w*dpr;cv.height=h*dpr;cv.style.width=w+'px';cv.style.height=h+'px';var ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);return{ctx:ctx,w:w,h:h};}
+function lc(cv,o){var _=sc(cv),ctx=_.ctx,w=_.w,h=_.h,pL=o.pL||38,pR=o.pR||8,pT=o.pT||8,pB=o.pB||22,cw=w-pL-pR,ch=h-pT-pB;var aY=[];o.s.forEach(function(s){s.d.forEach(function(d){if(d!=null)aY.push(d)});});var yN=o.yN!==undefined?o.yN:Math.min.apply(null,aY),yX=o.yX!==undefined?o.yX:Math.max.apply(null,aY);if(yN===yX){yN--;yX++;}var yR=yX-yN,n=o.s[0].d.length,xS=cw/(n-1);ctx.strokeStyle=C.grd;ctx.lineWidth=1;ctx.font='9px Inter,sans-serif';ctx.fillStyle=C.mut;var yT=o.yT||3;for(var i=0;i<=yT;i++){var yv=yN+(yR*i/yT),y=pT+ch-(ch*i/yT);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(w-pR,y);ctx.stroke();ctx.fillText(o.yF?o.yF(yv):yv.toFixed(0),2,y+3);}if(o.xL){var xC=o.xL.length,sE=o.xLE||Math.ceil(xC/6);ctx.fillStyle=C.mut;o.xL.forEach(function(l,i){if(i%sE===0||i===xC-1){ctx.textAlign='center';ctx.fillText(l,pL+xS*i,h-6);}});ctx.textAlign='start';}o.s.forEach(function(s){ctx.strokeStyle=s.c;ctx.lineWidth=s.w||2;if(s.d2)ctx.setLineDash(s.d2);else ctx.setLineDash([]);ctx.beginPath();var st=false;s.d.forEach(function(d,i){if(d==null){st=false;return;}var x=pL+xS*i,y=pT+ch-((d-yN)/yR)*ch;if(!st){ctx.moveTo(x,y);st=true;}else ctx.lineTo(x,y);});ctx.stroke();ctx.setLineDash([]);if(s.ld){var arr=s.d.slice().reverse(),fi=arr.findIndex(function(d){return d!=null;}),li=s.d.length-1-fi;if(li>=0){var lx=pL+xS*li,ly=pT+ch-((s.d[li]-yN)/yR)*ch;ctx.fillStyle=s.c;ctx.beginPath();ctx.arc(lx,ly,3,0,Math.PI*2);ctx.fill();}}});}
+function bc(cv,o){var _=sc(cv),ctx=_.ctx,w=_.w,h=_.h,pL=o.pL||22,pR=o.pR||8,pT=8,pB=22,cw=w-pL-pR,ch=h-pT-pB,n=o.l.length,gW=cw/n,bW=gW*.7,yM=o.yM||12;ctx.strokeStyle=C.grd;ctx.lineWidth=1;ctx.font='9px Inter,sans-serif';ctx.fillStyle=C.mut;for(var i=0;i<=3;i++){var y=pT+ch-(ch*i/3);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(w-pR,y);ctx.stroke();ctx.fillText((yM*i/3).toFixed(0),2,y+3);}o.l.forEach(function(l,i){var x0=pL+gW*i+(gW-bW)/2,sk=o.sk[i],yC=0;sk.forEach(function(v,si){var bH=(v/yM)*ch,y=pT+ch-bH-yC;ctx.fillStyle=o.c[si];ctx.fillRect(x0,y,bW,bH);yC+=bH;});var sE=o.xLE||Math.ceil(n/6);if(i%sE===0||i===n-1){ctx.fillStyle=C.mut;ctx.textAlign='center';ctx.fillText(l,x0+bW/2,h-6);ctx.textAlign='start';}});if(o.tL!==undefined){var ty=pT+ch-(o.tL/yM)*ch;ctx.strokeStyle=C.tgt;ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(pL,ty);ctx.lineTo(w-pR,ty);ctx.stroke();ctx.setLineDash([]);}}
+function sp(cv,data,col,o){o=o||{};var _=sc(cv),ctx=_.ctx,w=_.w,h=_.h,yN=o.yN!==undefined?o.yN:Math.min.apply(null,data),yX=o.yX!==undefined?o.yX:Math.max.apply(null,data),yR=yX-yN||1,p=4,cw=w-p*2,ch=h-p*2,xS=cw/(data.length-1);ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.beginPath();data.forEach(function(d,i){var x=p+xS*i,y=p+ch-((d-yN)/yR)*ch;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();var lx=p+xS*(data.length-1),ly=p+ch-((data[data.length-1]-yN)/yR)*ch;ctx.fillStyle=col;ctx.beginPath();ctx.arc(lx,ly,2,0,Math.PI*2);ctx.fill();}
+function bs(cv,data,col,o){o=o||{};var _=sc(cv),ctx=_.ctx,w=_.w,h=_.h,pL=28,pR=8,pT=6,pB=18,cw=w-pL-pR,ch=h-pT-pB,yN=o.yN||0,yX=o.yX||105,yR=yX-yN||1,xS=cw/(data.length-1);ctx.strokeStyle=C.grd;ctx.lineWidth=1;ctx.font='9px Inter,sans-serif';ctx.fillStyle=C.mut;for(var i=0;i<=2;i++){var yv=yN+(yR*i/2),y=pT+ch-(ch*i/2);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(w-pR,y);ctx.stroke();ctx.fillText(yv.toFixed(0)+'%',2,y+3);}if(o.t!==undefined){var ty=pT+ch-((o.t-yN)/yR)*ch;ctx.strokeStyle=C.tgt;ctx.lineWidth=1.5;ctx.setLineDash([3,2]);ctx.beginPath();ctx.moveTo(pL,ty);ctx.lineTo(w-pR,ty);ctx.stroke();ctx.setLineDash([]);}if(o.xL){var sE=Math.ceil(o.xL.length/4);o.xL.forEach(function(l,i){if(i%sE===0||i===o.xL.length-1){var x=pL+xS*i;ctx.textAlign='center';ctx.fillStyle=C.mut;ctx.fillText(l,x,h-4);}});ctx.textAlign='start';}ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();data.forEach(function(d,i){var x=pL+xS*i,y=pT+ch-((d-yN)/yR)*ch;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();var lx=pL+xS*(data.length-1),ly=pT+ch-((data[data.length-1]-yN)/yR)*ch;ctx.fillStyle=col;ctx.beginPath();ctx.arc(lx,ly,3,0,Math.PI*2);ctx.fill();}
+function drawDB(cv){var _=sc(cv),ctx=_.ctx,w=_.w,h=_.h;var cats=[{l:'PR Review – EaaS entity/schema',n:280,c:'#2563EB'},{l:'Incident / Alert (CRDB, latency)',n:150,c:'#EF4444'},{l:'Technical questions (SDK, design)',n:115,c:'#8B5CF6'},{l:'PR Review – CODEOWNERS',n:80,c:'#06B6D4'},{l:'Schema CI failure / unblock',n:65,c:'#F59E0B'},{l:'PR Review – Schema field mod',n:60,c:'#10B981'},{l:'MSSQL-to-EaaS migration',n:55,c:'#EC4899'},{l:'PR Review – ACP key / auth',n:50,c:'#F97316'},{l:'Kafka CDC access',n:40,c:'#14B8A6'},{l:'EaaS GUI/CLI access issues',n:30,c:'#84CC16'},{l:'Capacity / rate limit',n:25,c:'#64748B'},{l:'Announcements / misc',n:50,c:'#94A3B8'}];var pL=194,pR=46,pT=4,pB=4,cw=w-pL-pR,ch=h-pT-pB,n=cats.length,rH=ch/n,bH=rH*.55,mN=280;ctx.font='10px Inter,sans-serif';cats.forEach(function(cat,i){var y=pT+rH*i+(rH-bH)/2,bW=(cat.n/mN)*cw;ctx.fillStyle=cat.c+'22';ctx.fillRect(pL,y,cw,bH);ctx.fillStyle=cat.c;ctx.fillRect(pL,y,bW,bH);ctx.fillStyle='#0F172A';ctx.textAlign='right';ctx.fillText(cat.l,pL-6,y+bH/2+3);ctx.font='bold 10px Inter,sans-serif';ctx.textAlign='left';ctx.fillText(cat.n,pL+bW+4,y+bH/2+3);ctx.font='10px Inter,sans-serif';});}
+function ml(cv,data,labels,o){var vis={};Object.keys(data).forEach(function(k){vis[k]=true;});function render(){var _=sc(cv),ctx=_.ctx,w=_.w,h=_.h,pL=44,pR=70,pT=12,pB=26,cw=w-pL-pR,ch=h-pT-pB,n=labels.length,xS=cw/(n-1),yN=o.yN,yX=o.yX,yR=yX-yN;ctx.strokeStyle=C.grd;ctx.lineWidth=1;ctx.font='10px Inter,sans-serif';ctx.fillStyle=C.mut;var yT=6;for(var i=0;i<=yT;i++){var yv=yN+(yR*i/yT),y=pT+ch-(ch*i/yT);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(w-pR,y);ctx.stroke();ctx.fillText((yv>0?'+':'')+yv.toFixed(0)+'%',4,y+3);}var y0=pT+ch-((0-yN)/yR)*ch;ctx.strokeStyle='#94A3B8';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(pL,y0);ctx.lineTo(w-pR,y0);ctx.stroke();ctx.fillStyle=C.mut;var sE=Math.ceil(n/8);labels.forEach(function(l,i){if(i%sE===0||i===n-1){ctx.textAlign='center';ctx.fillText(l,pL+xS*i,h-8);}});ctx.textAlign='start';var sorted=Object.keys(data).filter(function(s){return vis[s];}).sort(function(a,b){return data[b][n-1]-data[a][n-1];});sorted.forEach(function(sv){ctx.strokeStyle=SC[sv];ctx.lineWidth=1.8;ctx.beginPath();data[sv].forEach(function(d,i){var x=pL+xS*i,y=pT+ch-((d-yN)/yR)*ch;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();});var lY=-Infinity,mG=12;sorted.forEach(function(sv){var eY=pT+ch-((data[sv][n-1]-yN)/yR)*ch;if(eY-lY<mG)eY=lY+mG;lY=eY;ctx.fillStyle=SC[sv];ctx.font='10px Inter,sans-serif';ctx.fillText(sv,pL+xS*(n-1)+6,eY+3);var rY=pT+ch-((data[sv][n-1]-yN)/yR)*ch;ctx.beginPath();ctx.arc(pL+xS*(n-1),rY,2.5,0,Math.PI*2);ctx.fill();});}render();var tEl=cv.id==='ch-adopt'?document.getElementById('adopt-t'):cv.id==='ch-unitp'?document.getElementById('unitp-t'):null;if(tEl){Object.keys(data).forEach(function(sv){var t=document.createElement('span');t.className='sb-svc-toggle';t.innerHTML='<span class="swatch" style="background:'+SC[sv]+'"></span>'+sv;t.onclick=function(){vis[sv]=!vis[sv];t.classList.toggle('off');render();};tEl.appendChild(t);});}}
+var M15=['Mar25','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan26','Feb','Mar','Apr','May'],M12=['Jun25','Jul','Aug','Sep','Oct','Nov','Dec','Jan26','Feb','Mar','Apr','May'],SL=['Jun25','Jul','Aug','Sep','Oct','Nov','Dec','Jan26','Feb','Mar','Apr','May'];
+lc(document.getElementById('ch-avail'),{yN:99.90,yX:100.00,yT:3,pL:36,yF:function(v){return v.toFixed(2)+'%';},xL:M15,s:[{d:[99.989,99.998,99.954,99.999,99.978,99.976,99.920,100.000,99.996,99.994,99.999,99.999,99.985,99.989,99.967],c:C.act,w:2,ld:true},{d:Array(15).fill(99.99),c:C.tgt,w:1.5,d2:[4,3]}]});
+bc(document.getElementById('ch-inc-mini'),{l:M15,sk:[[1,3],[0,4],[2,5],[1,2],[0,6],[1,4],[2,7],[1,3],[0,2],[1,4],[2,5],[1,3],[0,4],[1,7],[1,4]],c:[C.red,C.yel],yM:12,tL:6});
+sp(document.getElementById('ch-patch'),[68,70,72,73,75,74,76,77,78,79,80,82],C.red,{yN:60,yX:100});
+sp(document.getElementById('ch-secrets'),[55,62,68,72,78,82,85,86,87,87,87,87],C.yel,{yN:50,yX:100});
+lc(document.getElementById('ch-budget-mini'),{yN:1.6,yX:2.6,yT:3,pL:32,yF:function(v){return '$'+v.toFixed(1)+'M';},xL:M12,s:[{d:[1.92,1.98,2.05,2.04,2.08,2.12,2.18,2.20,2.24,2.27,2.30,2.34],c:C.act,w:2,ld:true},{d:[2.00,2.05,2.10,2.12,2.14,2.16,2.18,2.20,2.22,2.23,2.24,2.25],c:C.tgt,w:1.5,d2:[4,3]},{d:[null,null,null,null,null,null,null,null,null,null,2.30,2.34],c:C.fct,w:1.5,d2:[4,3]}]});
+lc(document.getElementById('ch-growth-mini'),{yN:0.8,yX:1.8,yT:3,pL:30,yF:function(v){return v.toFixed(1)+'×';},xL:M15,s:[{d:[1.0,1.0,0.9,1.1,1.0,1.1,1.2,1.1,1.2,1.3,1.2,1.3,1.3,1.3,1.4],c:C.yel,w:2,ld:true},{d:Array(15).fill(1.0),c:C.tgt,w:1.5,d2:[4,3]}]});
+var AP={'EaaS/CRDB':[0,2,4,6,8,11,14,17,20,22,24,26],'RaaS':[0,1,2,2,3,4,4,5,6,7,8,9],'QaaS':[0,5,9,14,18,22,26,30,34,37,39,41],'R3':[0,1,2,2,3,3,4,4,5,5,6,7],'RDB-KV':[0,3,6,9,13,16,19,22,24,26,27,28],'RDB-PG':[0,0,0,0,0,0,0,0,0,0,0,0],'MS SQL':[0,-1,-2,-3,-4,-5,-6,-7,-8,-8,-9,-9],'Elasticsearch':[0,2,4,6,9,11,13,15,17,18,19,20],'ClickHouse':[0,12,25,38,52,65,78,91,105,118,130,142],'Temporal':[0,18,38,58,78,98,120,144,168,188,200,212]};
+var UP={'EaaS/CRDB':[0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-11,-14],'RaaS':[0,0,0,0,0,0,0,0,0,0,0,0],'QaaS':[0,-1,-2,-4,-5,-6,-7,-8,-9,-10,-11,-12],'R3':[0,0,0,0,0,0,0,0,0,0,0,0],'RDB-KV':[0,0,0,0,0,0,0,0,0,0,0,0],'RDB-PG':[0,0,0,0,0,0,0,0,0,0,0,0],'MS SQL':[0,1,2,3,4,5,6,7,8,9,11,14],'Elasticsearch':[0,-1,-1,-2,-3,-3,-4,-5,-5,-6,-7,-7],'ClickHouse':[0,2,3,5,7,9,10,12,14,16,19,22],'Temporal':[0,-2,-4,-6,-7,-8,-9,-9,-9,-9,-9,-9]};
+ml(document.getElementById('ch-adopt'),AP,SL,{yN:-30,yX:240});
+ml(document.getElementById('ch-unitp'),UP,SL,{yN:-18,yX:24});
+lc(document.getElementById('ch-budget-big'),{yN:1.6,yX:2.8,yT:4,pL:44,yF:function(v){return '$'+v.toFixed(2)+'M';},xL:['Jun25','Jul','Aug','Sep','Oct','Nov','Dec','Jan26','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],xLE:2,s:[{d:[1.92,1.98,2.05,2.04,2.08,2.12,2.18,2.20,2.24,2.27,2.30,2.34,null,null,null,null,null,null,null],c:C.act,w:2.5,ld:true},{d:[2.00,2.05,2.10,2.12,2.14,2.16,2.18,2.20,2.22,2.23,2.24,2.25,2.27,2.28,2.30,2.30,2.32,2.34,2.36],c:C.tgt,w:1.8,d2:[5,4]},{d:[null,null,null,null,null,null,null,null,null,null,null,2.34,2.40,2.42,2.45,2.50,2.48,2.52,2.55],c:C.fct,w:2,d2:[5,4]}]});
+(function(){var cv=document.getElementById('ch-inc-big'),lbls=M15,svcs=['EaaS/CRDB','RaaS','QaaS','RDB-KV','Elasticsearch'],iD={'EaaS/CRDB':[1,1,2,1,2,1,2,1,0,1,1,1,1,2,1],'RaaS':[2,2,3,1,2,3,4,2,1,3,3,2,2,3,3],'QaaS':[1,1,1,1,1,1,2,1,1,1,2,1,1,2,1],'RDB-KV':[0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],'Elasticsearch':[0,0,1,0,1,0,0,0,0,0,1,0,0,1,0]},vis={};svcs.forEach(function(s){vis[s]=true;});function render(){var _=sc(cv),ctx=_.ctx,w=_.w,h=_.h,pL=36,pR=8,pT=22,pB=28,cw=w-pL-pR,ch=h-pT-pB,n=lbls.length,gW=cw/n,bW=gW*.72,yM=12;ctx.strokeStyle=C.grd;ctx.lineWidth=1;ctx.font='10px Inter,sans-serif';ctx.fillStyle=C.mut;for(var i=0;i<=4;i++){var y=pT+ch-(ch*i/4);ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(w-pR,y);ctx.stroke();ctx.fillText((yM*i/4).toFixed(0),6,y+3);}var yTg=pT+ch-(6/yM)*ch;ctx.strokeStyle=C.tgt;ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(pL,yTg);ctx.lineTo(w-pR,yTg);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=C.mut;ctx.font='9px Inter,sans-serif';ctx.fillText('target ≤6/mo',w-pR-60,yTg-4);lbls.forEach(function(l,i){var x0=pL+gW*i+(gW-bW)/2,yC=0,tot=0;svcs.forEach(function(sv){if(!vis[sv])return;var v=iD[sv][i];tot+=v;if(!v)return;var bH=(v/yM)*ch,y=pT+ch-bH-yC;ctx.fillStyle=SC[sv];ctx.fillRect(x0,y,bW,bH);if(bH>14){ctx.fillStyle='#fff';ctx.font='10px Inter,sans-serif';ctx.textAlign='center';ctx.fillText(v,x0+bW/2,y+bH/2+4);ctx.textAlign='start';}yC+=bH;});if(tot){var tY=pT+ch-(tot/yM)*ch;ctx.fillStyle='#0F172A';ctx.font='bold 11px Inter,sans-serif';ctx.textAlign='center';ctx.fillText(tot,x0+bW/2,tY-6);ctx.textAlign='start';}ctx.fillStyle=C.mut;ctx.font='10px Inter,sans-serif';ctx.textAlign='center';ctx.fillText(l,x0+bW/2,h-8);ctx.textAlign='start';});}render();var tEl=document.getElementById('inc-t');svcs.forEach(function(sv){var t=document.createElement('span');t.className='sb-svc-toggle';t.innerHTML='<span class="swatch" style="background:'+SC[sv]+'"></span>'+sv;t.onclick=function(){vis[sv]=!vis[sv];t.classList.toggle('off');render();};tEl.appendChild(t);});})();
+var SLb=['Jun25','Jul','Aug','Sep','Oct','Nov','Dec','Jan26','Feb','Mar','Apr','May'];
+bs(document.querySelector('[data-bs="sec-patch"]'),[68,70,72,73,75,74,76,77,78,79,80,82],C.red,{yN:50,yX:105,t:100,xL:SLb});
+bs(document.querySelector('[data-bs="sec-secrets"]'),[55,62,68,72,78,82,85,86,87,87,87,87],C.yel,{yN:50,yX:105,t:100,xL:SLb});
+bs(document.querySelector('[data-bs="sec-enc"]'),[88,89,90,91,92,93,94,94,94,95,95,95],C.yel,{yN:80,yX:105,t:100,xL:SLb});
+bs(document.querySelector('[data-bs="sec-vuln"]'),[2,1,1,0,1,0,0,0,0,0,0,0],C.grn,{yN:0,yX:5,t:0,xL:SLb});
+</script>
+</body>
+</html>
